@@ -13,12 +13,18 @@ namespace App_for_time_management.Views
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class Page1 : ContentPage
     {
-        ScheduleViewModel scheduleView;
+        private ScheduleViewModel _scheduleView;
         public Page1()
         {
             InitializeComponent();
-            BindingContext = scheduleView = new ScheduleViewModel();
+            BindingContext = _scheduleView = new ScheduleViewModel();
 
+        }
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            _scheduleView.OnAppearing();
         }
     }
 }

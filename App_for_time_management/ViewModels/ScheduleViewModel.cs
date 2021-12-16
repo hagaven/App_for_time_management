@@ -9,17 +9,17 @@ using Xamarin.Forms;
 
 namespace App_for_time_management.ViewModels
 {
-    class ScheduleViewModel:BaseViewModel
+    public class ScheduleViewModel:BaseViewModel
     {
         private Item _selectedItem;
-        public ObservableCollection<Item> Items { get; }
+        public ObservableCollection<ScheduledItem> Items { get; }
         public Command LoadItemsCommand { get; }
         public Command<Item> ItemTapped { get; }
 
         public ScheduleViewModel()
         {
             Title = "Harmonogram";
-            Items = new ObservableCollection<Item>();
+            Items = new ObservableCollection<ScheduledItem>();
             LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
 
             ItemTapped = new Command<Item>(OnItemSelected);
@@ -34,13 +34,18 @@ namespace App_for_time_management.ViewModels
             try
             {
                 Items.Clear();
-                var items = await App.Database.GetItemsAsync(true);
+                IEnumerable<Item> items = await App.Database.GetItemsAsync(true);
                 List<Item> temporaryList = new List<Item>();
                 foreach (var item in items)
                 {
                     if (item.TimeSensitive && (item.DeadlineDate.Date == DateTime.Now.Date))
                     {
-                        Items.Add(item);
+                        ScheduledItem scheduled = new ScheduledItem
+                        {
+                            StartTime = new TimeSpan(),
+                            Scheduled = item
+                        };
+                        Items.Add(scheduled);
 
 
                     }
@@ -114,18 +119,7 @@ namespace App_for_time_management.ViewModels
                     }
                     double pPriority = pTime.TotalHours * pMultiplier;
                     double qPriority = qTime.TotalHours * qMultiplier;
-                    if (pPriority > qPriority)
-                    {
-                        return -1;
-                    }
-                    else if(pPriority < qPriority)
-                    {
-                        return 1;
-                    }
-                    else
-                    {
-                        return 0;
-                    }
+                    return pPriority > qPriority ? -1 : pPriority < qPriority ? 1 : 0;
                 });
                 foreach(var item in temporaryList)
                 {
@@ -160,11 +154,12 @@ namespace App_for_time_management.ViewModels
             }
         }
 
-        async void OnItemSelected(Item item)
+        private async void OnItemSelected(Item item)
         {
             if (item == null)
+            {
                 return;
-
+            }
 
             await Shell.Current.GoToAsync($"{nameof(ItemDetailPage)}?{nameof(ItemDetailViewModel.ItemId)}={item.ID.ToString()}");
         }

@@ -14,7 +14,7 @@ namespace App_for_time_management.Views
 {
     public partial class ItemsPage : ContentPage
     {
-        ItemsViewModel _viewModel;
+        private ItemsViewModel _viewModel;
 
         public ItemsPage()
         {
