@@ -28,11 +28,11 @@ namespace App_for_time_management.Models
         public bool IsDone { get; set; }
 
         [OneToMany]
-        public List<SubItem> subActivity { get; set; }
+        public List<SubItem> SubActivity { get; set; }
 
         public TimeSpan Duration { get; set; }
-        
-          
-        
+
+
+
     }
 }

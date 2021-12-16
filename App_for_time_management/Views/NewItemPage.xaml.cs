@@ -21,13 +21,13 @@ namespace App_for_time_management.Views
 
         private void DurationMinutesSlider_ValueChanged(object sender, ValueChangedEventArgs e)
         {
-            string msg = e.NewValue.ToString();
-            this.durCntrl2.Text = msg;
+            string msg = Math.Round(e.NewValue).ToString();
+            durCntrl2.Text = msg;
         }
         private void DurationHoursSlider_ValueChanged(object sender, ValueChangedEventArgs e)
         {
-            string msg = e.NewValue.ToString();
-            this.durCntrl1.Text = msg;
+            string msg = Math.Round(e.NewValue).ToString();
+            durCntrl1.Text = msg;
 
         }
     }

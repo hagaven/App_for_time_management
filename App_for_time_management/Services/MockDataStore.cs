@@ -11,17 +11,21 @@ namespace App_for_time_management.Services
     public class MockDataStore : IDataStore<Item>
     {
         readonly List<Item> items;
-        static SQLiteAsyncConnection database;
+        private static SQLiteAsyncConnection database;
 
         public MockDataStore()
         {
             
             items = new List<Item>();
+
         }
         static async Task Init()
         {
             if (database != null)
+            {
                 return;
+            }
+
             string dbPath = Path.Combine(Xamarin.Essentials.FileSystem.AppDataDirectory, "base.db3");
             database = new SQLiteAsyncConnection(dbPath);
             await database.CreateTableAsync<Item>();
@@ -56,14 +60,18 @@ namespace App_for_time_management.Services
         public async Task<Item> GetItemAsync(int id)
         {
             await Init();
-            return await Task.FromResult(items.FirstOrDefault(s => s.ID == id));
+            //await Task.FromResult(items.FirstOrDefault(s => s.ID == id));
+            
+            return await database.Table<Item>().FirstOrDefaultAsync(s => s.ID == id);
         }
+
+
 
         public async Task<IEnumerable<Item>> GetItemsAsync(bool forceRefresh = false)
         {
             await Init();
-            await Task.FromResult(items);
-            await database.Table<Item>().ToListAsync();
+            //await Task.FromResult(items);
+            //await database.Table<Item>().ToListAsync();
             var itemList = await database.Table<Item>().ToListAsync();
             return itemList;
         }

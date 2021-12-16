@@ -86,6 +86,20 @@ namespace App_for_time_management.ViewModels
             get => durationMinutes;
             set => SetProperty(ref durationMinutes, value);
         }
+
+        public string DurCntrl1
+        {
+            get => durctrl1;
+            set => SetProperty(ref durctrl1, value);
+        }
+
+        public string DurCntrl2
+        {
+            get => durctrl2;
+            set => SetProperty(ref durctrl2, value);
+        }
+
+
         public Command SaveCommand { get; }
         public Command CancelCommand { get; }
 

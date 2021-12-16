@@ -76,7 +76,9 @@ namespace App_for_time_management.ViewModels
         {
             try
             {
-                item = await DataStore.GetItemAsync(itemId);
+                var t = DataStore.GetItemAsync(itemId);
+                
+                item = await t;
                 Id = item.ID;
                 Text = item.Text;
                 Description = item.Description;
@@ -86,9 +88,11 @@ namespace App_for_time_management.ViewModels
                 
                 
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 Debug.WriteLine("Failed to Load Item");
+                Debug.WriteLine(e.Message);
+                Debug.WriteLine(itemId);
             }
         }
         public Command DeleteCommand { get; }
