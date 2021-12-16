@@ -16,7 +16,8 @@ namespace App_for_time_management.ViewModels
         private DateTime deadlineDate;
         private TimeSpan deadlineTime;
         private string eisenhower;
-        private bool timeSensitive;
+        private string timeSensitive;
+        private TimeSpan duration;
 
 
 
@@ -45,7 +46,11 @@ namespace App_for_time_management.ViewModels
             get => eisenhower;
             set => SetProperty(ref eisenhower, value);
         }
-
+        public string TimeSensitive
+        {
+            get => timeSensitive;
+            set => SetProperty(ref timeSensitive, value);
+        }
         public DateTime DeadlineDate
         {
             get => deadlineDate.Date;
@@ -57,7 +62,11 @@ namespace App_for_time_management.ViewModels
             get => deadlineTime;
             set => SetProperty(ref deadlineTime, value);
         }
-        
+        public TimeSpan Duration
+        {
+            get => duration;
+            set => SetProperty(ref duration, value);
+        }
 
         public int ItemId
         {
@@ -85,7 +94,8 @@ namespace App_for_time_management.ViewModels
                 DeadlineDate = item.DeadlineDate;
                 DeadlineTime = item.DeadlineTime;
                 Eisenhower = item.Eisenhower;
-                
+                TimeSensitive = IsTimeSensitive(item.TimeSensitive);
+                Duration = item.Duration;
                 
             }
             catch (Exception e)
@@ -109,7 +119,14 @@ namespace App_for_time_management.ViewModels
         {
             item.IsDone = true;
             await DataStore.UpdateItemAsync(item);
+            await Shell.Current.GoToAsync("..");
         }
 
+        public string IsTimeSensitive(bool timeSensitivity)
+        {
+            return timeSensitivity ? "Aktywnosść wrażliwa na czas wykonania" : "Aktywnosść nie jest wrażliwa na czas wykonania";
+        }
+
+       
     }
 }

@@ -1,22 +1,29 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+             xmlns:viewmodels="clr-namespace:App_for_time_management.ViewModels" 
+             x:DataType="viewmodels:ItemDetailViewModel"
              x:Class="App_for_time_management.Views.ItemDetailPage"
              Title="{Binding Title}">
-
-    <StackLayout Spacing="20" Padding="15">
-        <Label Text="Nazwa aktywności:" FontSize="Medium" />
-        <Label Text="{Binding Text}" FontSize="Small"/>
-        <Label Text="Opis aktywności:" FontSize="Medium" />
-        <Label Text="{Binding Description}" FontSize="Small"/>
-        <Label Text="Data ostatecznego zakończenia:" FontSize="Medium" />
-        <Label Text="{Binding DeadlineDate, StringFormat='{0:dd.MM.yyyy}'}" FontSize="Small"/>
-        <Label Text="Godzina ostatecznego zakończenia:" FontSize="Medium" />
-        <Label Text="{Binding DeadlineTime}" FontSize="Small"/>
-        <Label Text="Typ aktywności:" FontSize="Medium" />
-        <Label Text="{Binding Eisenhower}" FontSize="Small"/>
-        <Button Text="Wykonano" Command="{Binding DoneCommand}" HorizontalOptions="FillAndExpand"></Button>
-        <Button Text="Usuń" Command="{Binding DeleteCommand}" HorizontalOptions="FillAndExpand"></Button>
-    </StackLayout>
+    <ScrollView>
+        <StackLayout Spacing="20" Padding="15">
+            <Label Text="Nazwa aktywności:" FontSize="Medium" />
+            <Label Text="{Binding Text}" FontSize="Small"/>
+            <Label Text="Opis aktywności:" FontSize="Medium" />
+            <Label Text="{Binding Description}" FontSize="Small"/>
+            <Label Text="Data ostatecznego zakończenia:" FontSize="Medium" />
+            <Label Text="{Binding DeadlineDate, StringFormat='{0:dd.MM.yyyy}'}" FontSize="Small"/>
+            <Label Text="Godzina ostatecznego zakończenia:" FontSize="Medium" />
+            <Label Text="{Binding DeadlineTime}" FontSize="Small"/>
+            <Label Text="Typ aktywności:" FontSize="Medium" />
+            <Label Text="{Binding Eisenhower}" FontSize="Small"/>
+            <Label Text="{Binding TimeSensitive}" FontSize="Small"/>
+            <Label Text="Przewidywany czas trwania:" FontSize="Small"/>
+            <Label Text="{Binding Duration}" FontSize="Small"/>
+            <Button Text="Wykonano" Command="{Binding DoneCommand}" HorizontalOptions="FillAndExpand"></Button>
+            <Button Text="Usuń" Command="{Binding DeleteCommand}" HorizontalOptions="FillAndExpand"></Button>
+        </StackLayout>
+    </ScrollView>
+    
     
 </ContentPage>
