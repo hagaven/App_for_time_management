@@ -31,7 +31,7 @@ namespace App_for_time_management.ViewModels
             
         }
 
-        async Task ExecuteLoadItemsCommand()
+        public async Task ExecuteLoadItemsCommand()
         {
             IsBusy = true;
 
@@ -57,7 +57,7 @@ namespace App_for_time_management.ViewModels
 
 
                     }
-                    else
+                    else if(!item.TimeSensitive)
                     {
                         temporaryList.Add(item);
                     }
@@ -135,16 +135,17 @@ namespace App_for_time_management.ViewModels
                     {
                         break;
                     }
-
-                    ScheduledItem scheduled = new ScheduledItem
+                    if (!item.IsDone)
                     {
-                        StartTime = start,
-                        Scheduled = item
-                    };
-                    Items.Add(scheduled);
-                    planned = planned.Add(scheduled.Scheduled.Duration);
-                    start = start.Add(scheduled.Scheduled.Duration).Add(new TimeSpan(0, 15, 0));
-
+                        ScheduledItem scheduled = new ScheduledItem
+                        {
+                            StartTime = start,
+                            Scheduled = item
+                        };
+                        Items.Add(scheduled);
+                        planned = planned.Add(scheduled.Scheduled.Duration);
+                        start = start.Add(scheduled.Scheduled.Duration).Add(new TimeSpan(0, 15, 0));
+                    }
                 }
 
 

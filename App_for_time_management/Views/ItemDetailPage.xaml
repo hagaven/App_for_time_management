@@ -20,6 +20,10 @@
             <Label Text="{Binding TimeSensitive}" FontSize="Small"/>
             <Label Text="Przewidywany czas trwania:" FontSize="Small"/>
             <Label Text="{Binding Duration}" FontSize="Small"/>
+            <StackLayout Orientation="Horizontal">
+                <Label Text="Wykonano:"/>
+                <CheckBox IsChecked="{Binding IsDone}" IsEnabled="False" />
+            </StackLayout>
             <RefreshView x:DataType="viewmodels:ItemDetailViewModel" Command="{Binding LoadSubItemsCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
                 <StackLayout>
                     <CollectionView x:Name="SubItemsListView"
