@@ -78,7 +78,7 @@ namespace App_for_time_management.ViewModels
                 return;
 
             
-            await Shell.Current.GoToAsync($"{nameof(ItemDetailPage)}?{nameof(ItemDetailViewModel.ItemId)}={item.ID.ToString()}");
+            await Shell.Current.GoToAsync($"{nameof(ItemDetailPage)}?{nameof(ItemDetailViewModel.ItemId)}={item.ID}");
         }
     }
 }

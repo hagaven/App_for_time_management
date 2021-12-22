@@ -13,7 +13,9 @@ namespace App_for_time_management
             InitializeComponent();
             Routing.RegisterRoute(nameof(ItemDetailPage), typeof(ItemDetailPage));
             Routing.RegisterRoute(nameof(NewItemPage), typeof(NewItemPage));
-            Routing.RegisterRoute(nameof(Page1), typeof(Page1));
+            Routing.RegisterRoute(nameof(SchedulePage), typeof(SchedulePage));
+            Routing.RegisterRoute(nameof(NewSubItemPage), typeof(NewSubItemPage));
+            Routing.RegisterRoute(nameof(SubItemDetailPage), typeof(SubItemDetailPage));
         }
 
     }

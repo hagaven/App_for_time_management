@@ -1,7 +1,10 @@
 ﻿using App_for_time_management.Models;
+using App_for_time_management.Views;
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Xamarin.Forms;
 
 namespace App_for_time_management.ViewModels
@@ -10,7 +13,7 @@ namespace App_for_time_management.ViewModels
     public class ItemDetailViewModel : BaseViewModel
     {
         private Item item;
-        private int itemId;
+        private string itemId;
         private string text;
         private string description;
         private DateTime deadlineDate;
@@ -18,16 +21,29 @@ namespace App_for_time_management.ViewModels
         private string eisenhower;
         private string timeSensitive;
         private TimeSpan duration;
+        private bool isDone;
 
 
+        public ObservableCollection<SubItem> SubActivities { get; }
+        public ICommand LoadSubItemsCommand { get; }
+        public Command<SubItem> SubItemTapped { get; }
+        
+        private SubItem _selectedSubItem;
+
+        public double ListHeight { get; set; } = 50;
+        
 
         public ItemDetailViewModel()
         {
             DeleteCommand = new Command(OnDelete);
             DoneCommand = new Command(OnDone);
+            LoadSubItemsCommand = new Command(async () => await ExecuteLoadSubItemsCommand());
+            SubItemTapped = new Command<SubItem>(OnSubItemSelected);
+            SubActivities = new ObservableCollection<SubItem>();
+            
         }
 
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         public string Text
         {
@@ -68,7 +84,7 @@ namespace App_for_time_management.ViewModels
             set => SetProperty(ref duration, value);
         }
 
-        public int ItemId
+        public string ItemId
         {
             get
             {
@@ -81,7 +97,29 @@ namespace App_for_time_management.ViewModels
             }
         }
 
-        public async void LoadItemId(int itemId)
+        public bool IsDone
+        {
+            get => isDone;
+            set => SetProperty(ref isDone, value);
+        }
+
+        public SubItem SelectedSubItem
+        {
+            get => _selectedSubItem;
+            set
+            {
+                SetProperty(ref _selectedSubItem, value);
+                OnSubItemSelected(value);
+            }
+        }
+        public void OnAppearing()
+        {
+            IsBusy = true;
+            SelectedSubItem = null;
+           
+        }
+
+        public async void LoadItemId(string itemId)
         {
             try
             {
@@ -96,6 +134,8 @@ namespace App_for_time_management.ViewModels
                 Eisenhower = item.Eisenhower;
                 TimeSensitive = IsTimeSensitive(item.TimeSensitive);
                 Duration = item.Duration;
+                IsDone = item.IsDone;
+                
                 
             }
             catch (Exception e)
@@ -121,12 +161,44 @@ namespace App_for_time_management.ViewModels
             await DataStore.UpdateItemAsync(item);
             await Shell.Current.GoToAsync("..");
         }
+        public Command AddSubActivityCommand { get; }
 
         public string IsTimeSensitive(bool timeSensitivity)
         {
-            return timeSensitivity ? "Aktywnosść wrażliwa na czas wykonania" : "Aktywnosść nie jest wrażliwa na czas wykonania";
+            return timeSensitivity ? "Aktywność wrażliwa na czas wykonania" : "Aktywność nie jest wrażliwa na czas wykonania";
         }
 
-       
+        private async void OnSubItemSelected(SubItem subItem)
+        {
+            if (subItem == null)
+                return;
+
+
+            await Shell.Current.GoToAsync($"{nameof(SubItemDetailPage)}?{nameof(SubItemDetailViewModel.Id)}={subItem.ID}");
+        }
+        private async Task ExecuteLoadSubItemsCommand()
+        {
+            IsBusy = true;
+
+            try
+            {
+                SubActivities.Clear();
+                var subItems = await App.Database.GetSubItemsByParentIDAsync(Id,true);
+                foreach (var subItem in subItems)
+                {
+                    SubActivities.Add(subItem);
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
     }
 }

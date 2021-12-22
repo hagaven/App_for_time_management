@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:viewmodels="clr-namespace:App_for_time_management.ViewModels" x:DataType="viewmodels:NewSubItemViewModel"
+             x:Class="App_for_time_management.Views.NewSubItemPage">
+    <ContentPage.Content>
+        <StackLayout>
+            <Label Text="Nazwa aktywności" FontSize="Medium" />
+            <Entry Text="{Binding Text, Mode=TwoWay}" FontSize="Medium" />
+            
+            <Label Text="Opis aktywności" FontSize="Medium" />
+            <Editor Text="{Binding Description, Mode=TwoWay}" AutoSize="TextChanges" FontSize="Medium" Margin="0" />
+
+            <Label Text="Przybliżony czas trwania aktywności"/>
+            <Label Text="Godziny"/>
+            <Slider x:Name="DurationHoursSlider"
+                    Minimum="0"
+                    Maximum="50"
+                    Value="{Binding DurationHours, Mode=TwoWay}"
+                    ValueChanged="DurationHoursSlider_ValueChanged"
+                    />
+            <Label x:Name="durCntrl1"
+                       Text="{Binding DurCntrl1,Mode=TwoWay}"/>
+
+            <Label Text="Minuty"/>
+            <Slider x:Name="DurationMinutesSlider"
+                    Minimum="0"
+                    Maximum="59"
+                    
+                    ValueChanged="DurationMinutesSlider_ValueChanged"
+                    Value="{Binding DurationMinutes}"
+                    />
+            <Label x:Name="durCntrl2"
+                       Text="{Binding DurCntrl2,Mode=TwoWay}"/>
+
+            <StackLayout Orientation="Horizontal">
+                <Button Text="Cancel" Command="{Binding CancelCommand}" HorizontalOptions="FillAndExpand"></Button>
+                <Button Text="Save" Command="{Binding SaveCommand}" HorizontalOptions="FillAndExpand"></Button>
+            </StackLayout>
+
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

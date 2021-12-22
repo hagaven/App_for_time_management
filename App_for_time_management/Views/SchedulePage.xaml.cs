@@ -10,11 +10,11 @@ using Xamarin.Forms.Xaml;
 
 namespace App_for_time_management.Views
 {
-    [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class Page1 : ContentPage
+    
+    public partial class SchedulePage : ContentPage
     {
-        private ScheduleViewModel _scheduleView;
-        public Page1()
+        private readonly ScheduleViewModel _scheduleView;
+        public SchedulePage()
         {
             InitializeComponent();
             BindingContext = _scheduleView = new ScheduleViewModel();

@@ -10,16 +10,23 @@ namespace App_for_time_management.Models
     [Table("SubActivities")]
     public class SubItem
     {
-        [PrimaryKey, AutoIncrement]
-        public int ID { get; set; }
+        [PrimaryKey]
+        public string ID { get; set; }
+
         [MaxLength(200)]
         public string Text { get; set; }
+
         [MaxLength(1000)]
         public string Description { get; set; }
-        [ForeignKey(typeof(Item))]
-        public int parentID { get; set; }
 
-        [ManyToOne]
-        public Item parentActivity { get; set; }
+        public TimeSpan Duration { get; set; }
+
+        public bool IsDone { get; set; }
+
+        [ForeignKey(typeof(Item))]
+        public string ParentID { get; set; }
+
+        [ManyToOne(CascadeOperations = CascadeOperation.All)]
+        public Item ParentActivity { get; set; }
     }
 }

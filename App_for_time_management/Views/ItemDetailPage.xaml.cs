@@ -6,10 +6,17 @@ namespace App_for_time_management.Views
 {
     public partial class ItemDetailPage : ContentPage
     {
+        private readonly ItemDetailViewModel _viewModel;
         public ItemDetailPage()
         {
             InitializeComponent();
-            BindingContext = new ItemDetailViewModel();
+            BindingContext = _viewModel = new ItemDetailViewModel();
+            
+        }
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            _viewModel.OnAppearing();
         }
     }
 }

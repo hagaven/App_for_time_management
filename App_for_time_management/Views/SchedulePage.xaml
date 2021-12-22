@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="App_for_time_management.Views.Page1"
-             Title="{Binding Title}"
+             x:Class="App_for_time_management.Views.SchedulePage"
+             Title="Harmonogram"
              xmlns:local="clr-namespace:App_for_time_management.ViewModels"  
              xmlns:model="clr-namespace:App_for_time_management.Models"  
              x:Name="ScheduledActivitiesPage">

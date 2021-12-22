@@ -8,22 +8,15 @@ using Xamarin.Forms.Xaml;
 
 namespace App_for_time_management.Views
 {
-    public partial class NewItemPage : ContentPage
+    public partial class NewSubItemPage : ContentPage
     {
         public Item Item { get; set; }
-        public NewItemViewModel _viewModel;
 
-        public NewItemPage()
+        public NewSubItemPage()
         {
             InitializeComponent();
-            BindingContext = _viewModel = new NewItemViewModel();
-            
-        }
+            BindingContext = new NewSubItemViewModel();
 
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-            _viewModel.OnAppearing();
         }
 
         private void DurationMinutesSlider_ValueChanged(object sender, ValueChangedEventArgs e)

@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:viewmodels="clr-namespace:App_for_time_management.ViewModels" x:DataType="viewmodels:SubItemDetailViewModel"
+             x:Class="App_for_time_management.Views.SubItemDetailPage">
+    <ContentPage.Content>
+        <StackLayout Spacing="20" Padding="15">
+            <Label Text="Nazwa aktywności:" FontSize="Medium" />
+            <Label Text="{Binding ActivityTitle}" FontSize="Small"/>
+            <Label Text="Nazwa etapu:" FontSize="Medium" />
+            <Label Text="{Binding Text}" FontSize="Small"/>
+            <Label Text="Opis etapu:" FontSize="Medium" />
+            <Label Text="{Binding Description}" FontSize="Small"/>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

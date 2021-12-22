@@ -4,72 +4,114 @@
              x:Class="App_for_time_management.Views.NewItemPage"
              Shell.PresentationMode="ModalAnimated"
              Title="New Item"
-             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core" xmlns:viewmodels="clr-namespace:App_for_time_management.ViewModels" x:DataType="viewmodels:NewItemViewModel"
+             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core" xmlns:viewmodels="clr-namespace:App_for_time_management.ViewModels" xmlns:model="clr-namespace:App_for_time_management.Models" x:DataType="viewmodels:NewItemViewModel"
              ios:Page.UseSafeArea="true">
     <ContentPage.Content>
-        <StackLayout Spacing="3" Padding="15">
-            <Label Text="Nazwa aktywności" FontSize="Medium" />
-            <Entry Text="{Binding Text, Mode=TwoWay}" FontSize="Medium" />
-            <Label Text="Opis aktywności" FontSize="Medium" />
-            <Editor Text="{Binding Description, Mode=TwoWay}" AutoSize="TextChanges" FontSize="Medium" Margin="0" />
-            <Label Text="Ostateczna data zakończenia aktywności"/>
-            <DatePicker x:Name="DeadlineDatePicker"
+        <ScrollView>
+            <StackLayout Spacing="3" Padding="15">
+
+                <Label Text="Nazwa aktywności" FontSize="Medium" />
+                <Entry Text="{Binding Text, Mode=TwoWay}" FontSize="Medium" />
+
+                <Label Text="Opis aktywności" FontSize="Medium" />
+                <Editor Text="{Binding Description, Mode=TwoWay}" AutoSize="TextChanges" FontSize="Medium" Margin="0" />
+
+                <Label Text="Ostateczna data zakończenia aktywności"/>
+                <DatePicker x:Name="DeadlineDatePicker"
                         MinimumDate="{Binding Today}"
                         Date="{Binding DeadlineDate, Mode=TwoWay}"/>
-            <Label x:Name="DeadlineDate"
+                <Label x:Name="DeadlineDate"
                    Text="{Binding Date, Source={x:Reference DeadlineDatePicker}}"
                    FontSize="Medium"
                    HorizontalOptions="Center"
                    TextColor="White"/>
-            <Label Text="Ostateczna godzina zakończenia aktywności"/>
-            
-            <TimePicker x:Name="DeadlineTimePicker"
+
+                <Label Text="Ostateczna godzina zakończenia aktywności"/>
+                <TimePicker x:Name="DeadlineTimePicker"
                         Time="{Binding DeadlineTime, Mode=TwoWay}"/>
-            <Label Text="Typ aktywności"/>
-            <Picker x:Name="eisenhower"
+
+                <Label Text="Typ aktywności"/>
+                <Picker x:Name="eisenhower"
                     Title="Wybierz typ aktywności"
                     SelectedItem="{Binding Eisenhower}">
-                <Picker.ItemsSource>
-                    <x:Array Type="{x:Type x:String}">
-                        <x:String>Ważne i pilne</x:String>
-                        <x:String>Ważne i niepilne</x:String>
-                        <x:String>Nieważne i pilne</x:String>
-                        <x:String>Nieważne i niepilne</x:String>
-                    </x:Array>
-                </Picker.ItemsSource>
-            </Picker>
-            <Label Text="Czy aktywność musi być wykonana o wpisanej godzinie?"/>
-            <CheckBox x:Name="TimeSensitive"/>
-            <Label Text="Przybliżony czas trwania aktywności"/>
-            <Label Text="Godziny"/>
-            <Slider x:Name="DurationHoursSlider"
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>Ważne i pilne</x:String>
+                            <x:String>Ważne i niepilne</x:String>
+                            <x:String>Nieważne i pilne</x:String>
+                            <x:String>Nieważne i niepilne</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+
+                <Label Text="Czy aktywność musi być wykonana o wpisanej godzinie?"/>
+                <CheckBox x:Name="TimeSensitive"/>
+
+                <Label Text="Przybliżony czas trwania aktywności"/>
+                <Label Text="Godziny"/>
+                <Slider x:Name="DurationHoursSlider"
                     Minimum="0"
                     Maximum="50"
                     Value="{Binding DurationHours, Mode=TwoWay}"
                     ValueChanged="DurationHoursSlider_ValueChanged"
                     />
-            <Label x:Name="durCntrl1"
+                <Label x:Name="durCntrl1"
                        Text="{Binding DurCntrl1,Mode=TwoWay}"/>
-            
-            <Label Text="Minuty"/>
-            <Slider x:Name="DurationMinutesSlider"
+
+                <Label Text="Minuty"/>
+                <Slider x:Name="DurationMinutesSlider"
                     Minimum="0"
                     Maximum="59"
                     
                     ValueChanged="DurationMinutesSlider_ValueChanged"
                     Value="{Binding DurationMinutes}"
                     />
-            <Label x:Name="durCntrl2"
+                <Label x:Name="durCntrl2"
                        Text="{Binding DurCntrl2,Mode=TwoWay}"/>
-            
+
+                <RefreshView x:DataType="viewmodels:NewItemViewModel" Command="{Binding LoadSubItemsCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
+                    <CollectionView x:Name="SubItemsListView"
+                        ItemsSource="{Binding SubActivities}"
+                        SelectionMode="None"
+                                    HeightRequest="{Binding ListHeight}">
+                        <CollectionView.ItemsLayout>
+                            <GridItemsLayout Orientation="Horizontal"
+                                         VerticalItemSpacing="10"/>
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <StackLayout Padding="10" x:DataType="model:SubItem">
+                                    <Label Text="{Binding Text}" 
+                                LineBreakMode="NoWrap" 
+                                Style="{DynamicResource ListItemTextStyle}" 
+                                FontSize="16" />
+                                    <Label Text="{Binding Description}" 
+                                LineBreakMode="NoWrap"
+                                Style="{DynamicResource ListItemDetailTextStyle}"
+                                FontSize="13" />
+                                    <StackLayout.GestureRecognizers>
+                                        <TapGestureRecognizer 
+                                    NumberOfTapsRequired="1"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:NewItemViewModel}}, Path=SubItemTapped}"		
+                                    CommandParameter="{Binding .}">
+                                        </TapGestureRecognizer>
+                                    </StackLayout.GestureRecognizers>
+                                </StackLayout>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </RefreshView>
+                <Button Text="Dodaj etap" Command="{Binding AddSubActivityCommand}" HorizontalOptions="FillAndExpand"></Button>
 
 
 
-            <StackLayout Orientation="Horizontal">
-                <Button Text="Cancel" Command="{Binding CancelCommand}" HorizontalOptions="FillAndExpand"></Button>
-                <Button Text="Save" Command="{Binding SaveCommand}" HorizontalOptions="FillAndExpand"></Button>
+                <StackLayout Orientation="Horizontal">
+
+                    <Button Text="Cancel" Command="{Binding CancelCommand}" HorizontalOptions="FillAndExpand"></Button>
+                    <Button Text="Save" Command="{Binding SaveCommand}" HorizontalOptions="FillAndExpand"></Button>
+                </StackLayout>
             </StackLayout>
-        </StackLayout>
+        </ScrollView>
     </ContentPage.Content>
     
 </ContentPage>

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
-             xmlns:viewmodels="clr-namespace:App_for_time_management.ViewModels" 
+             xmlns:viewmodels="clr-namespace:App_for_time_management.ViewModels" xmlns:model="clr-namespace:App_for_time_management.Models"
              x:DataType="viewmodels:ItemDetailViewModel"
              x:Class="App_for_time_management.Views.ItemDetailPage"
              Title="{Binding Title}">
@@ -20,6 +20,38 @@
             <Label Text="{Binding TimeSensitive}" FontSize="Small"/>
             <Label Text="Przewidywany czas trwania:" FontSize="Small"/>
             <Label Text="{Binding Duration}" FontSize="Small"/>
+            <RefreshView x:DataType="viewmodels:ItemDetailViewModel" Command="{Binding LoadSubItemsCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
+                <StackLayout>
+                    <CollectionView x:Name="SubItemsListView"
+                    ItemsSource="{Binding SubActivities}"
+                    SelectionMode="None"
+                    Footer=""
+                    HeightRequest="{Binding ListHeight, Mode=TwoWay}">
+
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <StackLayout Padding="10" x:DataType="model:SubItem">
+                                    <Label Text="{Binding Text}" 
+                                    LineBreakMode="NoWrap" 
+                                    Style="{DynamicResource ListItemTextStyle}" 
+                                    FontSize="16" 
+                                           />
+                                    
+                                    <StackLayout.GestureRecognizers>
+                                        <TapGestureRecognizer 
+                                    NumberOfTapsRequired="1"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ItemDetailViewModel}}, Path=SubItemTapped}"		
+                                    CommandParameter="{Binding .}">
+                                        </TapGestureRecognizer>
+                                    </StackLayout.GestureRecognizers>
+                                </StackLayout>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </StackLayout>
+            </RefreshView>
+            
+            
             <Button Text="Wykonano" Command="{Binding DoneCommand}" HorizontalOptions="FillAndExpand"></Button>
             <Button Text="Usuń" Command="{Binding DeleteCommand}" HorizontalOptions="FillAndExpand"></Button>
         </StackLayout>

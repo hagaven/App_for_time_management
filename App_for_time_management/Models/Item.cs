@@ -8,8 +8,8 @@ namespace App_for_time_management.Models
     [Table("Activities")]
     public class Item
     {
-        [PrimaryKey, AutoIncrement]
-        public int ID { get; set; }
+        [PrimaryKey]
+        public string ID { get; set; }
         [MaxLength(200)]
         public string Text { get; set; }
         [MaxLength(1000)]
@@ -27,7 +27,7 @@ namespace App_for_time_management.Models
 
         public bool IsDone { get; set; }
 
-        [OneToMany]
+        [OneToMany(CascadeOperations = CascadeOperation.All)]
         public List<SubItem> SubActivity { get; set; }
 
         public TimeSpan Duration { get; set; }

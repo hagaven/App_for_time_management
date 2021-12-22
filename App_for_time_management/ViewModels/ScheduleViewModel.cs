@@ -15,6 +15,8 @@ namespace App_for_time_management.ViewModels
         public ObservableCollection<ScheduledItem> Items { get; }
         public Command LoadItemsCommand { get; }
         public Command<Item> ItemTapped { get; }
+        private TimeSpan planned;
+        private TimeSpan start;
 
         public ScheduleViewModel()
         {
@@ -23,6 +25,8 @@ namespace App_for_time_management.ViewModels
             LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
 
             ItemTapped = new Command<Item>(OnItemSelected);
+            planned = new TimeSpan();
+            start = new TimeSpan(8, 0, 0);
 
             
         }
@@ -42,10 +46,14 @@ namespace App_for_time_management.ViewModels
                     {
                         ScheduledItem scheduled = new ScheduledItem
                         {
-                            StartTime = new TimeSpan(),
+                            StartTime = start,
                             Scheduled = item
                         };
                         Items.Add(scheduled);
+                        planned = planned.Add(scheduled.Scheduled.Duration);
+                        start = start.Add(scheduled.Scheduled.Duration).Add(new TimeSpan(0,15,0));
+
+
 
 
                     }
@@ -123,8 +131,20 @@ namespace App_for_time_management.ViewModels
                 });
                 foreach(var item in temporaryList)
                 {
-                    
-                    Items.Add(item);
+                    if (planned.CompareTo(new TimeSpan(9, 10, 0)) > 0)
+                    {
+                        break;
+                    }
+
+                    ScheduledItem scheduled = new ScheduledItem
+                    {
+                        StartTime = start,
+                        Scheduled = item
+                    };
+                    Items.Add(scheduled);
+                    planned = planned.Add(scheduled.Scheduled.Duration);
+                    start = start.Add(scheduled.Scheduled.Duration).Add(new TimeSpan(0, 15, 0));
+
                 }
 
 
@@ -161,7 +181,7 @@ namespace App_for_time_management.ViewModels
                 return;
             }
 
-            await Shell.Current.GoToAsync($"{nameof(ItemDetailPage)}?{nameof(ItemDetailViewModel.ItemId)}={item.ID.ToString()}");
+            await Shell.Current.GoToAsync($"{nameof(ItemDetailPage)}?{nameof(ItemDetailViewModel.ItemId)}={item.ID}");
         }
 
     }
