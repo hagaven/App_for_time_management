@@ -10,32 +10,57 @@
     
     
     <RefreshView x:DataType="local:ScheduleViewModel" Command="{Binding LoadItemsCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
-        <CollectionView x:Name="ItemsListView"
-                ItemsSource="{Binding Items}"
-                SelectionMode="None">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <StackLayout Padding="10" x:DataType="model:ScheduledItem">
-                        
-                        <Label Text="{Binding Scheduled.Text}" 
-                            LineBreakMode="NoWrap" 
-                            Style="{DynamicResource ListItemTextStyle}" 
-                            FontSize="16" />
-                        <Label Text="{Binding Scheduled.Description}" 
-                            LineBreakMode="NoWrap"
-                            Style="{DynamicResource ListItemDetailTextStyle}"
-                            FontSize="13" />
-                        <Label Text="{Binding StartTime}" FontSize="16"/>
-                        <StackLayout.GestureRecognizers>
-                            <TapGestureRecognizer 
+        <ScrollView>
+            <StackLayout BindableLayout.ItemsSource="{Binding Items}" 
+                         x:Name="ItemsListView"
+                         HorizontalOptions="FillAndExpand">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <Frame>
+                            <StackLayout Padding="10" 
+                                         x:DataType="model:ScheduledItem" >
+                                <Label Text="{Binding StartTime}" FontSize="16"/>
+                                <StackLayout Orientation="Horizontal" HorizontalOptions="FillAndExpand">
+                                    <Label Text="{Binding Scheduled.Name}" 
+                                       LineBreakMode="NoWrap" 
+                                       Style="{DynamicResource ListItemTextStyle}" 
+                                       FontSize="16" />
+                                    <CheckBox IsChecked="{Binding Scheduled.IsDone}"
+                                                  IsEnabled="False" />
+                                </StackLayout>
+                                <Label Text="{Binding Scheduled.Description}" 
+                                       LineBreakMode="NoWrap"
+                                       Style="{DynamicResource ListItemDetailTextStyle}"
+                                       FontSize="13" />
+                                <StackLayout BindableLayout.ItemsSource="{Binding SubActivities}"
+                                             x:Name="SubItemsViewList">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackLayout x:DataType="model:SubItem"
+                                                         Orientation="Horizontal"
+                                                         HorizontalOptions="FillAndExpand">
+                                                <Label Text="{Binding Text}"/>
+                                                <CheckBox IsChecked="{Binding IsDone}"
+                                                          IsEnabled="False" />
+                                            </StackLayout>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </StackLayout>
+                                <StackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer        
                                 NumberOfTapsRequired="1"
                                 Command="{Binding Source={RelativeSource AncestorType={x:Type local:ScheduleViewModel}}, Path=ItemTapped}"		
-                                CommandParameter="{Binding Scheduled}">
-                            </TapGestureRecognizer>
-                        </StackLayout.GestureRecognizers>
-                    </StackLayout>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                                CommandParameter="{Binding  Scheduled}">
+                                    </TapGestureRecognizer>
+                                </StackLayout.GestureRecognizers>
+
+                            </StackLayout>
+                            
+                        </Frame>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+                
+            </StackLayout>
+        </ScrollView>
     </RefreshView>
 </ContentPage>

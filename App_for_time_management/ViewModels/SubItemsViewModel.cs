@@ -19,7 +19,7 @@ namespace App_for_time_management.ViewModels
         public Command<SubItem> SubItemTapped { get; }
         public SubItemsViewModel()
         {
-            Title = "Browse";
+            Title = "Etapy";
             SubItems = new ObservableCollection<SubItem>();
             LoadItemsCommand = new Command(async () => await ExecuteLoadSubItemsCommand());
 

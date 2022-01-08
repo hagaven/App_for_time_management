@@ -1,8 +1,5 @@
-﻿using App_for_time_management.Models;
-using App_for_time_management.Views;
-using System;
+﻿using App_for_time_management.Views;
 using System.Windows.Input;
-using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace App_for_time_management.ViewModels

@@ -8,7 +8,7 @@
     <ScrollView>
         <StackLayout Spacing="20" Padding="15">
             <Label Text="Nazwa aktywności:" FontSize="Medium" />
-            <Label Text="{Binding Text}" FontSize="Small"/>
+            <Label Text="{Binding Name}" FontSize="Small"/>
             <Label Text="Opis aktywności:" FontSize="Medium" />
             <Label Text="{Binding Description}" FontSize="Small"/>
             <Label Text="Data ostatecznego zakończenia:" FontSize="Medium" />
@@ -24,40 +24,99 @@
                 <Label Text="Wykonano:"/>
                 <CheckBox IsChecked="{Binding IsDone}" IsEnabled="False" />
             </StackLayout>
+            <Label Text="Etapy:"
+                   FontSize="Medium"/>
             <RefreshView x:DataType="viewmodels:ItemDetailViewModel" Command="{Binding LoadSubItemsCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
+                
                 <StackLayout>
-                    <CollectionView x:Name="SubItemsListView"
-                    ItemsSource="{Binding SubActivities}"
-                    SelectionMode="None"
-                    Footer=""
-                    HeightRequest="{Binding ListHeight, Mode=TwoWay}">
+                    <StackLayout  x:Name="SubItemsListView"
+                                  BindableLayout.ItemsSource="{Binding SubActivities}"
+                                  BindableLayout.EmptyView="Brak etapów">
 
-                        <CollectionView.ItemTemplate>
+                        <BindableLayout.ItemTemplate>
                             <DataTemplate>
-                                <StackLayout Padding="10" x:DataType="model:SubItem">
-                                    <Label Text="{Binding Text}" 
-                                    LineBreakMode="NoWrap" 
-                                    Style="{DynamicResource ListItemTextStyle}" 
-                                    FontSize="16" 
+                                <StackLayout Padding="10" 
+                                             x:DataType="model:SubItem">
+                                    <Frame>
+                                        <StackLayout Orientation="Horizontal">
+                                            <Label Text="{Binding Text}" 
+                                            LineBreakMode="NoWrap" 
+                                            Style="{DynamicResource ListItemTextStyle}" 
+                                            FontSize="Medium"
                                            />
+                                            <CheckBox IsChecked="{Binding IsDone}"
+                                                  IsEnabled="False" />
+                                        </StackLayout>
+                                    </Frame>
+                                    
                                     
                                     <StackLayout.GestureRecognizers>
                                         <TapGestureRecognizer 
-                                    NumberOfTapsRequired="1"
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ItemDetailViewModel}}, Path=SubItemTapped}"		
-                                    CommandParameter="{Binding .}">
+                                            NumberOfTapsRequired="1"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ItemDetailViewModel}}, Path=SubItemTapped}"		
+                                            CommandParameter="{Binding .}">
                                         </TapGestureRecognizer>
                                     </StackLayout.GestureRecognizers>
                                 </StackLayout>
                             </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
+                        </BindableLayout.ItemTemplate>
+                    </StackLayout>
+                    <Label Text="Notatki:"
+                           FontSize="Medium"/>
+                    <ScrollView>
+                        <StackLayout BindableLayout.ItemsSource="{Binding ActivityNotes}"
+                                     BindableLayout.EmptyView="Brak notatek">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="model:ActivityNote">
+                                    <Frame>
+                                        <Label Text="{Binding Content}"/>
+                                        <Frame.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                NumberOfTapsRequired="1"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ItemDetailViewModel}},Path=NoteTapped}"
+                                                CommandParameter="{Binding .}">
+                                            </TapGestureRecognizer>
+                                        </Frame.GestureRecognizers>
+
+                                    </Frame>
+                                </DataTemplate>
+                                
+                            </BindableLayout.ItemTemplate>
+                            
+
+                        </StackLayout>
+                    </ScrollView>
                 </StackLayout>
             </RefreshView>
+            <Grid>
+                <Button Text="Dodaj etap" 
+                        Command="{Binding AddSubActivityCommand}" 
+                        HorizontalOptions="FillAndExpand"
+                        Grid.Column="0"
+                        Grid.Row="0"></Button>
+                <Button Text="Dodaj notatkę" 
+                        Command="{Binding AddActivityNoteCommand}" 
+                        HorizontalOptions="FillAndExpand"
+                        Grid.Column="1"
+                        Grid.Row="0"></Button>
+                <Button Text="Wykonano" 
+                        Command="{Binding DoneCommand}" 
+                        HorizontalOptions="FillAndExpand"
+                        Grid.ColumnSpan="2"
+                        Grid.Row="1"></Button>
+                <Button Text="Usuń" 
+                        Command="{Binding DeleteCommand}" 
+                        HorizontalOptions="FillAndExpand"
+                        Grid.ColumnSpan="2"
+                        Grid.Row="2"
+                        ></Button>
+                <Button Text="Powróć"
+                        Command="{Binding BackCommand}"
+                        HorizontalOptions="FillAndExpand"
+                        Grid.ColumnSpan="2"
+                        Grid.Row="3"></Button>
+            </Grid>
             
-            
-            <Button Text="Wykonano" Command="{Binding DoneCommand}" HorizontalOptions="FillAndExpand"></Button>
-            <Button Text="Usuń" Command="{Binding DeleteCommand}" HorizontalOptions="FillAndExpand"></Button>
         </StackLayout>
     </ScrollView>
     

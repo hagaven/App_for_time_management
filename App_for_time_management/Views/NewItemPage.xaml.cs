@@ -37,5 +37,10 @@ namespace App_for_time_management.Views
             durCntrl1.Text = msg;
 
         }
+
+        private void Cyclic_Toggled(object sender, ToggledEventArgs e)
+        {
+
+        }
     }
 }

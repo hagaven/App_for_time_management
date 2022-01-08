@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SQLite;
 using System.IO;
+using SQLiteNetExtensionsAsync.Extensions;
 
 namespace App_for_time_management.Services
 {
@@ -26,15 +27,15 @@ namespace App_for_time_management.Services
             {
                 return;
             }
-
             string dbPath = Path.Combine(Xamarin.Essentials.FileSystem.AppDataDirectory, "base.db3");
-            
             database = new SQLiteAsyncConnection(dbPath);
             //await database.DropTableAsync<SubItem>();
             //await database.DropTableAsync<Item>();
             await database.CreateTableAsync<Item>();
             await database.CreateTableAsync<SubItem>();
-            
+            await database.CreateTableAsync<ActivityNote>();
+            await database.CreateTableAsync<SubActivityNote>();
+
 
         }
 
@@ -65,8 +66,7 @@ namespace App_for_time_management.Services
         public async Task<Item> GetItemAsync(string id)
         {
             await Init();
-            return await database.Table<Item>().FirstOrDefaultAsync(s => s.ID == id);
-            
+            return await database.GetWithChildrenAsync<Item>(id);
         }
 
 
@@ -74,7 +74,7 @@ namespace App_for_time_management.Services
         public async Task<IEnumerable<Item>> GetItemsAsync(bool forceRefresh = false)
         {
             await Init();
-            var itemList = await database.Table<Item>().ToListAsync();
+            var itemList = await database.GetAllWithChildrenAsync<Item>();
             return itemList;
         }
 
@@ -105,7 +105,8 @@ namespace App_for_time_management.Services
         public async Task<SubItem> GetSubItemAsync(string id)
         {
             await Init();
-            return await database.Table<SubItem>().FirstOrDefaultAsync(s => s.ID == id);
+            
+            return await database.GetWithChildrenAsync<SubItem>(id);
         }
 
 
@@ -119,8 +120,53 @@ namespace App_for_time_management.Services
         public async Task<IEnumerable<SubItem>> GetSubItemsByParentIDAsync(string id,bool forceRefresh = false)
         {
             await Init();
-            var subItemList = await database.QueryAsync<SubItem>("SELECT * FROM [SubActivities] WHERE [ParentID] = \"" + id + "\" ;");
-            return subItemList;
+            Item it = await GetItemAsync(id);
+            return it.SubActivity;
+        }
+
+        public async Task<int> AddActivityNoteAsync(ActivityNote activityNote)
+        {
+            await Init();
+            return await database.InsertAsync(activityNote);
+
+        }
+        public async Task<int> DeleteActivityNoteAsync(string id)
+        {
+            await Init();
+            return await database.DeleteAsync<ActivityNote>(id);
+        }
+        public async Task<ActivityNote> GetActivityNoteAsync(string id)
+        {
+            await Init();
+            return await database.Table<ActivityNote>().FirstOrDefaultAsync(n => n.ID == id);
+        }
+
+        public async Task<int> AddSubActivityNoteAsync(SubActivityNote subActivityNote)
+        {
+            await Init();
+            return await database.InsertAsync(subActivityNote);
+        }
+        public async Task<int> DeleteSubActivityNoteAsync(string id)
+        {
+            await Init();
+            return await database.DeleteAsync<ActivityNote>(id);
+        }
+        public async Task<SubActivityNote> GetSubActivityNoteAsync(string id)
+        {
+            await Init();
+            return await database.Table<SubActivityNote>().FirstOrDefaultAsync(n => n.ID == id);
+        }
+
+        public async Task<int> UpdateActivityNote(ActivityNote activityNote)
+        {
+            await Init();
+            return await database.UpdateAsync(activityNote);
+        }
+
+        public async Task<int> UpdateSubActivityNote(SubActivityNote subActivityNote)
+        {
+            await Init();
+            return await database.UpdateAsync(subActivityNote);
         }
     }
 }

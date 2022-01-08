@@ -13,10 +13,16 @@ namespace App_for_time_management.Views
     
     public partial class SubItemDetailPage : ContentPage
     {
+        SubItemDetailViewModel _viewModel;
         public SubItemDetailPage()
         {
             InitializeComponent();
-            BindingContext = new SubItemDetailViewModel();
+            BindingContext = _viewModel =new SubItemDetailViewModel();
+        }
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            _viewModel.OnAppearing();
         }
     }
 }

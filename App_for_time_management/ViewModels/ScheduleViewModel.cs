@@ -25,16 +25,17 @@ namespace App_for_time_management.ViewModels
             LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
 
             ItemTapped = new Command<Item>(OnItemSelected);
-            planned = new TimeSpan();
-            start = new TimeSpan(8, 0, 0);
+            
 
             
         }
 
         public async Task ExecuteLoadItemsCommand()
         {
+            Debug.WriteLine("ex load");
             IsBusy = true;
-
+            planned = new TimeSpan();
+            start = new TimeSpan(8, 0, 0);
             try
             {
                 Items.Clear();
@@ -47,12 +48,53 @@ namespace App_for_time_management.ViewModels
                         ScheduledItem scheduled = new ScheduledItem
                         {
                             StartTime = start,
-                            Scheduled = item
+                            Scheduled = item,
+                            
                         };
                         Items.Add(scheduled);
                         planned = planned.Add(scheduled.Scheduled.Duration);
                         start = start.Add(scheduled.Scheduled.Duration).Add(new TimeSpan(0,15,0));
-
+                        foreach(var sub in item.SubActivity)
+                        {
+                            scheduled.SubActivities.Add(sub);
+                        }
+                        if (item.IsCyclic)
+                        {
+                            DateTime futureDate;
+                            switch (item.CyclePeriod)
+                            {
+                                case "Codziennie":
+                                    futureDate = item.DeadlineDate.AddDays(1);
+                                    break;
+                                case "Co tydzień":
+                                    futureDate = item.DeadlineDate.AddDays(7);
+                                    break;
+                                case "Co miesiąc":
+                                    futureDate = item.DeadlineDate.AddMonths(1);
+                                    break;
+                                case "Co rok":
+                                    futureDate = item.DeadlineDate.AddYears(1);
+                                    break;
+                                default:
+                                    futureDate = item.DeadlineDate.AddYears(10);
+                                    break;
+                            }
+                            Item powtorzony = new Item()
+                            {
+                                ID = Guid.NewGuid().ToString(),
+                                Name = item.Name,
+                                Description = item.Description,
+                                DeadlineDate = futureDate,
+                                DeadlineTime = item.DeadlineTime,
+                                Eisenhower = item.Eisenhower,
+                                TimeSensitive = item.TimeSensitive,
+                                IsDone = false,
+                                AdditionDate = DateTime.Now,
+                                Duration = item.Duration,
+                                IsCyclic = item.IsCyclic,
+                                CyclePeriod = item.CyclePeriod
+                            };
+                        }
 
 
 
@@ -137,14 +179,45 @@ namespace App_for_time_management.ViewModels
                     }
                     if (!item.IsDone)
                     {
+                        int subActivityCount = item.SubActivity.Count;
+                        ObservableCollection<SubItem> subItems = new ObservableCollection<SubItem>();
+                        if(!(subActivityCount == 0) && !(subActivityCount == 1))
+                        {
+                            int daysLeft = item.DeadlineDate.Subtract(DateTime.Now).Days;
+                            int numberOfSubActivities = subActivityCount;
+                            if (daysLeft > 0)
+                            {
+                                numberOfSubActivities = (int)Math.Ceiling((double)(subActivityCount / daysLeft));
+                            }
+                            int i = 0;
+                            foreach (SubItem subItem in item.SubActivity)
+                            {
+                                if (!(i < numberOfSubActivities))
+                                {
+                                    break;
+                                }
+                                if (!item.SubActivity[i].IsDone)
+                                {
+                                    subItems.Add(item.SubActivity[i]);
+                                    i++;
+                                }
+                            }
+                        }
                         ScheduledItem scheduled = new ScheduledItem
                         {
                             StartTime = start,
-                            Scheduled = item
+                            Scheduled = item,
+                            SubActivities = subItems
                         };
                         Items.Add(scheduled);
-                        planned = planned.Add(scheduled.Scheduled.Duration);
-                        start = start.Add(scheduled.Scheduled.Duration).Add(new TimeSpan(0, 15, 0));
+                        TimeSpan subActivitiesDuration = new TimeSpan();
+                        foreach (SubItem sub in scheduled.SubActivities)
+                        {
+                            subActivitiesDuration = subActivitiesDuration.Add(sub.Duration);
+                        }
+                        planned = scheduled.SubActivities.Count > 0 ? planned.Add(subActivitiesDuration) : planned.Add(scheduled.Scheduled.Duration);
+
+                        start = scheduled.SubActivities.Count > 0 ? start.Add(subActivitiesDuration).Add(new TimeSpan(0, 15, 0))  : start.Add(scheduled.Scheduled.Duration).Add(new TimeSpan(0, 15, 0));
                     }
                 }
 
@@ -164,6 +237,7 @@ namespace App_for_time_management.ViewModels
         {
             IsBusy = true;
             SelectedItem = null;
+
         }
         public Item SelectedItem
         {
@@ -171,7 +245,7 @@ namespace App_for_time_management.ViewModels
             set
             {
                 SetProperty(ref _selectedItem, value);
-                OnItemSelected(value);
+                //OnItemSelected(value);
             }
         }
 
@@ -181,8 +255,9 @@ namespace App_for_time_management.ViewModels
             {
                 return;
             }
-
+            
             await Shell.Current.GoToAsync($"{nameof(ItemDetailPage)}?{nameof(ItemDetailViewModel.ItemId)}={item.ID}");
+            
         }
 
     }

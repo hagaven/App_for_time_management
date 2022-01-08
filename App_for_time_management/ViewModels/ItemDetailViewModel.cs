@@ -14,7 +14,7 @@ namespace App_for_time_management.ViewModels
     {
         private Item item;
         private string itemId;
-        private string text;
+        private string name;
         private string description;
         private DateTime deadlineDate;
         private TimeSpan deadlineTime;
@@ -25,8 +25,12 @@ namespace App_for_time_management.ViewModels
 
 
         public ObservableCollection<SubItem> SubActivities { get; }
+        public ObservableCollection<ActivityNote> ActivityNotes { get; set; }
+        public Command AddActivityNoteCommand { get; private set; }
         public ICommand LoadSubItemsCommand { get; }
         public Command<SubItem> SubItemTapped { get; }
+
+        public Command<ActivityNote> NoteTapped { get; }
         
         private SubItem _selectedSubItem;
 
@@ -40,15 +44,36 @@ namespace App_for_time_management.ViewModels
             LoadSubItemsCommand = new Command(async () => await ExecuteLoadSubItemsCommand());
             SubItemTapped = new Command<SubItem>(OnSubItemSelected);
             SubActivities = new ObservableCollection<SubItem>();
+            ActivityNotes = new ObservableCollection<ActivityNote>();
+            AddActivityNoteCommand = new Command(OnAddActivityNote);
+            AddSubActivityCommand = new Command(OnAddSubActivity);
+            NoteTapped = new Command<ActivityNote>(OnNoteTapped);
+        }
+
+        private async void OnNoteTapped(ActivityNote note)
+        {
+            if (note == null)
+            {
+                return;
+            }
             
+            string result = await Shell.Current.DisplayPromptAsync("Notatka", "Treść", cancel: "Anuluj", initialValue: note.Content);
+            if(!string.IsNullOrWhiteSpace(result))
+            {
+                int index = ActivityNotes.IndexOf(note);
+                ActivityNotes.Remove(note);
+                note.Content = result;
+                ActivityNotes.Insert(index, note);
+            }
+            await DataStore.UpdateActivityNote(note);
         }
 
         public string Id { get; set; }
 
-        public string Text
+        public string Name
         {
-            get => text;
-            set => SetProperty(ref text, value);
+            get => name;
+            set => SetProperty(ref name, value);
         }
 
         public string Description
@@ -109,7 +134,7 @@ namespace App_for_time_management.ViewModels
             set
             {
                 SetProperty(ref _selectedSubItem, value);
-                OnSubItemSelected(value);
+                //OnSubItemSelected(value);
             }
         }
         public void OnAppearing()
@@ -123,11 +148,12 @@ namespace App_for_time_management.ViewModels
         {
             try
             {
+                IsBusy = true;
                 var t = DataStore.GetItemAsync(itemId);
                 
                 item = await t;
                 Id = item.ID;
-                Text = item.Text;
+                Name = item.Name;
                 Description = item.Description;
                 DeadlineDate = item.DeadlineDate;
                 DeadlineTime = item.DeadlineTime;
@@ -135,8 +161,27 @@ namespace App_for_time_management.ViewModels
                 TimeSensitive = IsTimeSensitive(item.TimeSensitive);
                 Duration = item.Duration;
                 IsDone = item.IsDone;
+
+                lock (SubActivities)
+                {
+                    SubActivities.Clear();
+
+                    foreach (SubItem subItem in item.SubActivity)
+                    {
+                        SubActivities.Add(subItem);
+                    }
+                }
+                lock (ActivityNotes)
+                {
+                    ActivityNotes.Clear();
+                    foreach (ActivityNote note in item.ActivityNotes)
+                    {
+                        ActivityNotes.Add(note);
+                    }
+                }
                 
-                
+                IsBusy = false;
+
             }
             catch (Exception e)
             {
@@ -171,10 +216,12 @@ namespace App_for_time_management.ViewModels
         private async void OnSubItemSelected(SubItem subItem)
         {
             if (subItem == null)
+            {
                 return;
+            }
 
 
-            await Shell.Current.GoToAsync($"{nameof(SubItemDetailPage)}?{nameof(SubItemDetailViewModel.Id)}={subItem.ID}");
+            await Shell.Current.GoToAsync($"{nameof(SubItemDetailPage)}?{nameof(SubItemDetailViewModel.SubItemId)}={subItem.ID}");
         }
         private async Task ExecuteLoadSubItemsCommand()
         {
@@ -182,9 +229,10 @@ namespace App_for_time_management.ViewModels
 
             try
             {
+                System.Collections.Generic.IEnumerable<SubItem> subItems = await App.Database.GetSubItemsByParentIDAsync(Id);
                 SubActivities.Clear();
-                var subItems = await App.Database.GetSubItemsByParentIDAsync(Id,true);
-                foreach (var subItem in subItems)
+                
+                foreach (SubItem subItem in subItems)
                 {
                     SubActivities.Add(subItem);
                 }
@@ -199,6 +247,46 @@ namespace App_for_time_management.ViewModels
                 IsBusy = false;
             }
         }
+        private async void OnAddActivityNote()
+        {
+            string result = await Shell.Current.DisplayPromptAsync("Nowa notatka", "Treść");
+            if (result == null)
+            {
+                return;
+            }
+            ActivityNote activityNote = new ActivityNote
+            {
+                ID = Guid.NewGuid().ToString(),
+                Content = result,
+                ParentID = Id
+            };
+            await DataStore.AddActivityNoteAsync(activityNote);
+            ActivityNotes.Add(activityNote);
 
+        }
+        private async void OnAddSubActivity()
+        {
+            await Shell.Current.GoToAsync($"{nameof(NewSubItemPage)}?{nameof(NewSubItemViewModel.ParentID)}={Id}");
+        }
+
+        private Command backCommand;
+
+        public ICommand BackCommand
+        {
+            get
+            {
+                if (backCommand == null)
+                {
+                    backCommand = new Command(Back);
+                }
+
+                return backCommand;
+            }
+        }
+
+        private async void Back()
+        {
+            await Shell.Current.GoToAsync("..");
+        }
     }
 }

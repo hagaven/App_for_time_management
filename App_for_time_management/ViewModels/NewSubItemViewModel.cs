@@ -1,6 +1,8 @@
 ﻿using App_for_time_management.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Text;
 using System.Windows.Input;
 using Xamarin.Forms;
@@ -16,20 +18,25 @@ namespace App_for_time_management.ViewModels
         private int durationMinutes;
         private string durctrl1;
         private string durctrl2;
-        private readonly string id;
+        private string id;
         private string parentID;
-
-
+        public Command<SubActivityNote> NoteTapped { get; }
+        public Command SaveCommand { get; }
+        public Command CancelCommand { get; }
+        public Command AddSubActivityNoteCommand { get; }
+        public ObservableCollection<SubActivityNote> SubActivityNotes { get; set; }
 
         public NewSubItemViewModel()
         {
             SaveCommand = new Command(OnSave, ValidateSave);
             CancelCommand = new Command(OnCancel);
-            this.PropertyChanged +=
+            AddSubActivityNoteCommand = new Command(OnAddActivityNote);
+            PropertyChanged +=
                 (_, __) => SaveCommand.ChangeCanExecute();
             
-            this.id = Guid.NewGuid().ToString();
-
+            id = Guid.NewGuid().ToString();
+            SubActivityNotes = new ObservableCollection<SubActivityNote>();
+            NoteTapped = new Command<SubActivityNote>(OnNoteTapped);
         }
 
         private bool ValidateSave()
@@ -80,9 +87,23 @@ namespace App_for_time_management.ViewModels
             set => SetProperty(ref parentID, value);
         }
 
-        public Command SaveCommand { get; }
-        public Command CancelCommand { get; }
 
+        private async void OnNoteTapped(SubActivityNote note)
+        {
+            if (note == null)
+            {
+                return;
+            }
+            string result = await Shell.Current.DisplayPromptAsync("Notatka", "Treść", cancel: "Anuluj", initialValue: note.Content);
+            if (!string.IsNullOrWhiteSpace(result))
+            {
+                int index = SubActivityNotes.IndexOf(note);
+                SubActivityNotes.Remove(note);
+                note.Content = result;
+                SubActivityNotes.Insert(index, note);
+            }
+            await DataStore.UpdateSubActivityNote(note);
+        }
 
         private async void OnCancel()
         {
@@ -95,17 +116,31 @@ namespace App_for_time_management.ViewModels
             TimeSpan duration = new TimeSpan(DurationHours, DurationMinutes, 0);
             SubItem newSubItem = new SubItem()
             {
-                ID=this.id,
+                ID = id,
                 Text = Text,
                 Description = Description,
                 Duration = duration,
                 ParentID = parentID
-
-
-
             };
             await App.Database.AddSubItemAsync(newSubItem);
             await Shell.Current.GoToAsync("..");
+        }
+        private async void OnAddActivityNote()
+        {
+            string result = await Shell.Current.DisplayPromptAsync("Nowa notatka", "Treść");
+            if (result == null)
+            {
+                return;
+            }
+            SubActivityNote subActivityNote = new SubActivityNote
+            {
+                ID = Guid.NewGuid().ToString(),
+                Content = result,
+                ParentID = id
+            };
+            await DataStore.AddSubActivityNoteAsync(subActivityNote);
+            SubActivityNotes.Add(subActivityNote);
+
         }
     }
 }

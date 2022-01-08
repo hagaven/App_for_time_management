@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:viewmodels="clr-namespace:App_for_time_management.ViewModels" x:DataType="viewmodels:NewSubItemViewModel"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:viewmodels="clr-namespace:App_for_time_management.ViewModels" x:DataType="viewmodels:NewSubItemViewModel" xmlns:models="clr-namespace:App_for_time_management.Models"
              x:Class="App_for_time_management.Views.NewSubItemPage">
     <ContentPage.Content>
         <StackLayout>
@@ -32,9 +32,32 @@
             <Label x:Name="durCntrl2"
                        Text="{Binding DurCntrl2,Mode=TwoWay}"/>
 
+            <ScrollView>
+                <StackLayout BindableLayout.ItemsSource="{Binding SubActivityNotes}"
+                             x:DataType="viewmodels:NewSubItemViewModel">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate
+                            x:DataType="models:SubActivityNote">
+                            <Frame>
+                                <Label Text="{Binding Content}"/>
+
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                                NumberOfTapsRequired="1"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:NewSubItemViewModel}},Path=NoteTapped}"
+                                                CommandParameter="{Binding .}">
+                                    </TapGestureRecognizer>
+                                </Frame.GestureRecognizers>
+                            </Frame>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+
+                </StackLayout>
+            </ScrollView>
+            <Button Text="Dodaj notatkę" Command="{Binding AddSubActivityNoteCommand}" HorizontalOptions="FillAndExpand"></Button>
             <StackLayout Orientation="Horizontal">
-                <Button Text="Cancel" Command="{Binding CancelCommand}" HorizontalOptions="FillAndExpand"></Button>
-                <Button Text="Save" Command="{Binding SaveCommand}" HorizontalOptions="FillAndExpand"></Button>
+                <Button Text="Anuluj" Command="{Binding CancelCommand}" HorizontalOptions="FillAndExpand"></Button>
+                <Button Text="Zapisz" Command="{Binding SaveCommand}" HorizontalOptions="FillAndExpand"></Button>
             </StackLayout>
 
         </StackLayout>

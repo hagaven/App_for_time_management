@@ -3,7 +3,9 @@ using App_for_time_management.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -11,7 +13,7 @@ using Xamarin.Forms;
 
 namespace App_for_time_management.ViewModels
 {
-    public class NewItemViewModel : BaseViewModel
+    public class NewItemViewModel : BaseViewModel, INotifyPropertyChanged
     {
         private string text;
         private string description;
@@ -19,38 +21,41 @@ namespace App_for_time_management.ViewModels
         private TimeSpan deadlineTime;
         private string eisenhower;
         private bool timesensitive;
+        private bool isCyclic;
+        private string cyclePeriod;
         private int durationHours;
         private int durationMinutes;
         private string durctrl1;
         private string durctrl2;
         private bool alreadyPresent;
-        public ObservableCollection<SubItem> SubActivities { get; }
+        private string id;
+        public ObservableCollection<SubItem> SubActivities { get; set; }
+        public ObservableCollection<ActivityNote> ActivityNotes { get; set; }
         public double ListHeight { get; set; } = 100;
         public Command<SubItem> SubItemTapped { get; }
         private SubItem _selectedSubItem;
-
-        private readonly string id;
-
         public Command SaveCommand { get; }
         public Command CancelCommand { get; }
         public Command AddSubActivityCommand { get; }
-
+        public Command AddActivityNoteCommand { get; }
+        public Command<ActivityNote> NoteTapped { get; }
         public ICommand LoadSubItemsCommand { get; }
-
-
         public NewItemViewModel()
         {
-            
             SaveCommand = new Command(OnSave, ValidateSave);
             CancelCommand = new Command(OnCancel);
             AddSubActivityCommand = new Command(OnAddSubActivity);
-            this.PropertyChanged +=
+            PropertyChanged +=
                 (_, __) => SaveCommand.ChangeCanExecute();
             id = Guid.NewGuid().ToString();
             SubActivities = new ObservableCollection<SubItem>();
+            ActivityNotes = new ObservableCollection<ActivityNote>();
             SubItemTapped = new Command<SubItem>(OnSubItemSelected);
             LoadSubItemsCommand = new Command(async () => await ExecuteLoadSubItemsCommand());
+            AddActivityNoteCommand = new Command(OnAddActivityNote);
             alreadyPresent = false;
+            DeadlineDate = DateTime.Now;
+            NoteTapped = new Command<ActivityNote>(OnNoteTapped); 
         }
         public async void LoadItem()
         {
@@ -60,7 +65,7 @@ namespace App_for_time_management.ViewModels
 
                 Item item = await t;
                 
-                Text = item.Text;
+                Text = item.Name;
                 Description = item.Description;
                 DeadlineDate = item.DeadlineDate;
                 DeadlineTime = item.DeadlineTime;
@@ -69,19 +74,26 @@ namespace App_for_time_management.ViewModels
                 DurCntrl1 = item.Duration.Hours.ToString();
                 DurCntrl2 = item.Duration.Minutes.ToString();
                 alreadyPresent = true;
-            }
-            catch (Exception)
-            {
+                lock (SubActivities)
+                {
+                    SubActivities.Clear();
+                    foreach (var s in item.SubActivity)
+                    {
+                        SubActivities.Add(s);
+                    }
+                }
                 
             }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+            }
         }
-
-        public async void OnAppearing()
+        public void OnAppearing()
         {
             IsBusy = true;
             SelectedSubItem = null;
             LoadItem();
-            await ExecuteLoadSubItemsCommand();
         }
         public SubItem SelectedSubItem
         {
@@ -95,11 +107,10 @@ namespace App_for_time_management.ViewModels
         private async void OnAddSubActivity()
         {
             TimeSpan duration = new TimeSpan(DurationHours, DurationMinutes, 0);
-
             Item newItem = new Item()
             {
                 ID = id,
-                Text = Text,
+                Name = Text,
                 Description = Description,
                 DeadlineDate = DeadlineDate.Add(DeadlineTime),
                 DeadlineTime = DeadlineTime,
@@ -110,7 +121,6 @@ namespace App_for_time_management.ViewModels
                 Duration = duration
 
             };
-
             if (!alreadyPresent)
             {
                 await DataStore.AddItemAsync(newItem);
@@ -119,98 +129,53 @@ namespace App_for_time_management.ViewModels
             {
                 await DataStore.UpdateItemAsync(newItem);
             }
-            await Shell.Current.GoToAsync($"{nameof(NewSubItemPage)}?{nameof(NewSubItemViewModel.ParentID)} = {id}");
-            
-            
+            await Shell.Current.GoToAsync($"{nameof(NewSubItemPage)}?{nameof(NewSubItemViewModel.ParentID)}={id}");
         }
+        private async void OnAddActivityNote()
+        {
+            string result = await Shell.Current.DisplayPromptAsync("Nowa notatka", "Treść",accept: "OK", cancel:"Anuluj");
+            if(result == null)
+            {
+                return;
+            }
+            ActivityNote activityNote = new ActivityNote
+            {
+                ID = Guid.NewGuid().ToString(),
+                Content = result,
+                ParentID = id
+            };
+            await DataStore.AddActivityNoteAsync(activityNote);
+            ActivityNotes.Add(activityNote);
 
-        private bool ValidateSave()
+        }
+        private async void OnNoteTapped(ActivityNote note)
         {
-            return !String.IsNullOrWhiteSpace(text)
-                && !String.IsNullOrWhiteSpace(description);
+            if (note == null)
+            {
+                return;
+            }
+            string result = await Shell.Current.DisplayPromptAsync("Notatka", "Treść", cancel: "Anuluj", initialValue: note.Content);
+            if (!string.IsNullOrWhiteSpace(result))
+            {
+                int index = ActivityNotes.IndexOf(note);
+                ActivityNotes.Remove(note);
+                note.Content = result;
+                ActivityNotes.Insert(index, note);
+            }
+            await DataStore.UpdateActivityNote(note);
         }
-
-        public string Text
-        {
-            get => text;
-            set => SetProperty(ref text, value);
-        }
-
-        public string Description
-        {
-            get => description;
-            set => SetProperty(ref description, value);
-        }
-        public DateTime Today{
-            get => DateTime.Now;
-        }
-        public string Eisenhower
-        {
-            get => eisenhower;
-            set => SetProperty(ref eisenhower, value);
-        }
-
-        public DateTime DeadlineDate
-        {
-            get => deadlineDate;
-            set => SetProperty(ref deadlineDate, value);
-        }
-        public TimeSpan DeadlineTime
-        {
-            get => deadlineTime;
-            set => SetProperty(ref deadlineTime, value);
-        }
-
-        public bool TimeSensitive
-        {
-            get => timesensitive;
-            set => SetProperty(ref timesensitive, value);
-        }
-
-        public int DurationHours
-        {
-            get => durationHours;
-            set => SetProperty(ref durationHours, value);
-        }
-
-        public int DurationMinutes
-        {
-            get => durationMinutes;
-            set => SetProperty(ref durationMinutes, value);
-        }
-
-        public string DurCntrl1
-        {
-            get => durctrl1;
-            set => SetProperty(ref durctrl1, value);
-        }
-
-        public string DurCntrl2
-        {
-            get => durctrl2;
-            set => SetProperty(ref durctrl2, value);
-        }
-
         private async void OnCancel()
         {
-            // This will pop the current page off the navigation stack
             await Shell.Current.GoToAsync("..");
         }
-
-
-
         private async void OnSave()
         {
-            TimeSpan duration = new TimeSpan(DurationHours, DurationMinutes,0);
-            List<SubItem> subs = new List<SubItem>();
-            foreach(var s in SubActivities)
-            {
-                subs.Add(s);
-            };
+            TimeSpan duration = new TimeSpan(DurationHours, DurationMinutes, 0);
+
             Item newItem = new Item()
             {
                 ID = id,
-                Text = Text,
+                Name = Text,
                 Description = Description,
                 DeadlineDate = DeadlineDate.Add(DeadlineTime),
                 DeadlineTime = DeadlineTime,
@@ -219,7 +184,8 @@ namespace App_for_time_management.ViewModels
                 IsDone = false,
                 AdditionDate = DateTime.Now,
                 Duration = duration,
-                SubActivity = subs
+                IsCyclic = IsCyclic,
+                CyclePeriod = CyclePeriod
 
             };
             if (!alreadyPresent)
@@ -230,9 +196,6 @@ namespace App_for_time_management.ViewModels
             {
                 await DataStore.UpdateItemAsync(newItem);
             }
-            
-
-            // This will pop the current page off the navigation stack
             await Shell.Current.GoToAsync("..");
         }
         private async void OnSubItemSelected(SubItem subItem)
@@ -241,19 +204,22 @@ namespace App_for_time_management.ViewModels
                 return;
 
 
-            await Shell.Current.GoToAsync($"{nameof(SubItemDetailPage)}?{nameof(SubItemDetailViewModel.Id)}={subItem.ID}");
+            await Shell.Current.GoToAsync($"{nameof(SubItemDetailPage)}?{nameof(SubItemDetailViewModel.SubItemId)}={subItem.ID}");
         }
         private async Task ExecuteLoadSubItemsCommand()
         {
             IsBusy = true;
 
             try
-            {
-                SubActivities.Clear();
+            {   
                 var subItems = await App.Database.GetSubItemsByParentIDAsync(id, true);
-                foreach (var subItem in subItems)
+                lock (SubActivities)
                 {
-                    SubActivities.Add(subItem);
+                    SubActivities.Clear();
+                    foreach (var subItem in subItems)
+                    {
+                        SubActivities.Add(subItem);
+                    }
                 }
             }
             catch (Exception ex)
@@ -264,6 +230,72 @@ namespace App_for_time_management.ViewModels
             {
                 IsBusy = false;
             }
+        }
+        private bool ValidateSave()
+        {
+            return !String.IsNullOrWhiteSpace(text)
+                && !String.IsNullOrWhiteSpace(description);
+        }
+        public string Text
+        {
+            get => text;
+            set => SetProperty(ref text, value);
+        }
+        public string Description
+        {
+            get => description;
+            set => SetProperty(ref description, value);
+        }
+        public DateTime Today => DateTime.Now;
+        public string Eisenhower
+        {
+            get => eisenhower;
+            set => SetProperty(ref eisenhower, value);
+        }
+        public bool IsCyclic
+        {
+            get => isCyclic;
+            set => SetProperty(ref isCyclic, value);
+        }
+        public string CyclePeriod
+        {
+            get => cyclePeriod;
+            set => SetProperty(ref cyclePeriod, value);
+        }
+        public DateTime DeadlineDate
+        {
+            get => deadlineDate;
+            set => SetProperty(ref deadlineDate, value);
+        }
+        public TimeSpan DeadlineTime
+        {
+            get => deadlineTime;
+            set => SetProperty(ref deadlineTime, value);
+        }
+        public bool TimeSensitive
+        {
+            get => timesensitive;
+            set => SetProperty(ref timesensitive, value);
+        }
+        public int DurationHours
+        {
+            get => durationHours;
+            set => SetProperty(ref durationHours, value);
+        }
+        public int DurationMinutes
+        {
+            get => durationMinutes;
+            set => SetProperty(ref durationMinutes, value);
+        }
+        public string DurCntrl1
+        {
+            get => durctrl1;
+            set => SetProperty(ref durctrl1, value);
+        }
+        public string DurCntrl2
+        {
+            get => durctrl2;
+            set => SetProperty(ref durctrl2, value);
         }
     }
 }

@@ -19,7 +19,7 @@ namespace App_for_time_management.ViewModels
 
         public ItemsViewModel()
         {
-            Title = "Browse";
+            Title = "Aktywności";
             Items = new ObservableCollection<Item>();
             LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
 
@@ -75,9 +75,10 @@ namespace App_for_time_management.ViewModels
         private async void OnItemSelected(Item item)
         {
             if (item == null)
+            {
                 return;
+            }
 
-            
             await Shell.Current.GoToAsync($"{nameof(ItemDetailPage)}?{nameof(ItemDetailViewModel.ItemId)}={item.ID}");
         }
     }

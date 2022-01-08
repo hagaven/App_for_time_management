@@ -4,7 +4,7 @@
              x:Class="App_for_time_management.Views.ItemsPage"
              Title="{Binding Title}"
              xmlns:local="clr-namespace:App_for_time_management.ViewModels"  
-             xmlns:model="clr-namespace:App_for_time_management.Models"  
+             xmlns:model="clr-namespace:App_for_time_management.Models" x:DataType="local:ItemsViewModel"
              x:Name="BrowseItemsPage">
 
     <ContentPage.ToolbarItems>
@@ -18,7 +18,7 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <StackLayout Padding="10" x:DataType="model:Item">
-                        <Label Text="{Binding Text}" 
+                        <Label Text="{Binding Name}" 
                             LineBreakMode="NoWrap" 
                             Style="{DynamicResource ListItemTextStyle}" 
                             FontSize="16" />

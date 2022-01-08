@@ -28,5 +28,8 @@ namespace App_for_time_management.Models
 
         [ManyToOne(CascadeOperations = CascadeOperation.All)]
         public Item ParentActivity { get; set; }
+
+        [OneToMany(CascadeOperations = CascadeOperation.All)]
+        public List<SubActivityNote> SubActivityNotes { get; set; }
     }
 }

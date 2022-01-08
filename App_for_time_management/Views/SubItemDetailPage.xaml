@@ -1,15 +1,41 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:viewmodels="clr-namespace:App_for_time_management.ViewModels" x:DataType="viewmodels:SubItemDetailViewModel"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:viewmodels="clr-namespace:App_for_time_management.ViewModels" xmlns:models="clr-namespace:App_for_time_management.Models" x:DataType="viewmodels:SubItemDetailViewModel"
              x:Class="App_for_time_management.Views.SubItemDetailPage">
     <ContentPage.Content>
-        <StackLayout Spacing="20" Padding="15">
-            <Label Text="Nazwa aktywności:" FontSize="Medium" />
-            <Label Text="{Binding ActivityTitle}" FontSize="Small"/>
-            <Label Text="Nazwa etapu:" FontSize="Medium" />
-            <Label Text="{Binding Text}" FontSize="Small"/>
-            <Label Text="Opis etapu:" FontSize="Medium" />
-            <Label Text="{Binding Description}" FontSize="Small"/>
-        </StackLayout>
+        <RefreshView x:DataType="viewmodels:SubItemDetailViewModel" Command="{Binding LoadSubItemCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
+            <ScrollView>
+                <StackLayout Spacing="20" Padding="15">
+                    <Label Text="Nazwa etapu:" FontSize="Medium" />
+                    <Label Text="{Binding Text}" FontSize="Small"/>
+                    <Label Text="Opis etapu:" FontSize="Medium" />
+                    <Label Text="{Binding Description}" FontSize="Small"/>
+                    <Label Text="Przewidywany czas trwania:" FontSize="Small"/>
+                    <Label Text="{Binding Duration}" FontSize="Small"/>
+                    <StackLayout BindableLayout.ItemsSource="{Binding SubActivityNotes}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Frame x:DataType="models:SubActivityNote">
+                                    <Label Text="{Binding Content}"/>
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                                NumberOfTapsRequired="1"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:SubItemDetailViewModel}},Path=NoteTapped}"
+                                                CommandParameter="{Binding .}">
+                                        </TapGestureRecognizer>
+                                    </Frame.GestureRecognizers>
+                                </Frame>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </StackLayout>
+                    <StackLayout>
+                        <Button Text="Dodaj notatkę" Command="{Binding AddSubActivityNoteCommand}" HorizontalOptions="FillAndExpand"></Button>
+                        <Button Text="Wykonano" Command="{Binding DoneCommand}" HorizontalOptions="FillAndExpand"></Button>
+                        <Button Text="Usuń" Command="{Binding DeleteCommand}" HorizontalOptions="FillAndExpand"></Button>
+                        <Button Text="Powróć" Command="{Binding BackCommand}" HorizontalOptions="FillAndExpand"></Button>
+                    </StackLayout>
+                </StackLayout>
+            </ScrollView>
+        </RefreshView>        
     </ContentPage.Content>
 </ContentPage>

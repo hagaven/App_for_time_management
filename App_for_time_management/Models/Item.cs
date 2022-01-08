@@ -11,7 +11,7 @@ namespace App_for_time_management.Models
         [PrimaryKey]
         public string ID { get; set; }
         [MaxLength(200)]
-        public string Text { get; set; }
+        public string Name { get; set; }
         [MaxLength(1000)]
         public string Description { get; set; }
         public DateTime DeadlineDate { get; set; }
@@ -30,7 +30,14 @@ namespace App_for_time_management.Models
         [OneToMany(CascadeOperations = CascadeOperation.All)]
         public List<SubItem> SubActivity { get; set; }
 
+        [OneToMany(CascadeOperations = CascadeOperation.All)]
+        public List<ActivityNote> ActivityNotes { get; set; }
+
         public TimeSpan Duration { get; set; }
+
+        public bool IsCyclic { get; set; }
+
+        public string CyclePeriod { get; set; }
 
 
 

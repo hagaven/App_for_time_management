@@ -32,8 +32,8 @@
 
                 <Label Text="Typ aktywności"/>
                 <Picker x:Name="eisenhower"
-                    Title="Wybierz typ aktywności"
-                    SelectedItem="{Binding Eisenhower}">
+                        Title="Wybierz typ aktywności"
+                        SelectedItem="{Binding Eisenhower}">
                     <Picker.ItemsSource>
                         <x:Array Type="{x:Type x:String}">
                             <x:String>Ważne i pilne</x:String>
@@ -45,7 +45,28 @@
                 </Picker>
 
                 <Label Text="Czy aktywność musi być wykonana o wpisanej godzinie?"/>
-                <CheckBox x:Name="TimeSensitive"/>
+                <Switch x:Name="TimeSensitive"
+                        IsToggled="{Binding TimeSensitive}"/>
+                <StackLayout IsVisible="{Binding Source={x:Reference TimeSensitive},Path=IsToggled}">
+                    <Label Text="Czy jest to cykliczna aktywność?"/>
+                    <Switch x:Name="Cyclic"
+                            IsToggled="{Binding IsCyclic}">
+                    </Switch>
+                    <Picker x:Name="CyclicType"
+                            Title="Powtarzaj:"
+                            SelectedItem="{Binding CyclePeriod}"
+                            IsVisible="{Binding Source={x:Reference Cyclic},Path=IsToggled}">
+                        <Picker.ItemsSource>
+                            <x:Array Type="{x:Type x:String}">
+                                <x:String>Codziennie</x:String>
+                                <x:String>Co tydzień</x:String>
+                                <x:String>Co miesiąc</x:String>
+                                <x:String>Co rok</x:String>
+                            </x:Array>
+                        </Picker.ItemsSource>
+                    </Picker>
+                    
+                </StackLayout>
 
                 <Label Text="Przybliżony czas trwania aktywności"/>
                 <Label Text="Godziny"/>
@@ -70,45 +91,63 @@
                        Text="{Binding DurCntrl2,Mode=TwoWay}"/>
 
                 <RefreshView x:DataType="viewmodels:NewItemViewModel" Command="{Binding LoadSubItemsCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
-                    <CollectionView x:Name="SubItemsListView"
-                        ItemsSource="{Binding SubActivities}"
-                        SelectionMode="None"
-                                    HeightRequest="{Binding ListHeight}">
-                        <CollectionView.ItemsLayout>
-                            <GridItemsLayout Orientation="Horizontal"
-                                         VerticalItemSpacing="10"/>
-                        </CollectionView.ItemsLayout>
-                        <CollectionView.ItemTemplate>
+                    <StackLayout x:Name="SubItemsListView"
+                                 BindableLayout.ItemsSource="{Binding SubActivities}">
+                        <BindableLayout.ItemTemplate>
                             <DataTemplate>
-                                <StackLayout Padding="10" x:DataType="model:SubItem">
-                                    <Label Text="{Binding Text}" 
-                                LineBreakMode="NoWrap" 
-                                Style="{DynamicResource ListItemTextStyle}" 
-                                FontSize="16" />
-                                    <Label Text="{Binding Description}" 
-                                LineBreakMode="NoWrap"
-                                Style="{DynamicResource ListItemDetailTextStyle}"
-                                FontSize="13" />
-                                    <StackLayout.GestureRecognizers>
-                                        <TapGestureRecognizer 
-                                    NumberOfTapsRequired="1"
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:NewItemViewModel}}, Path=SubItemTapped}"		
-                                    CommandParameter="{Binding .}">
-                                        </TapGestureRecognizer>
-                                    </StackLayout.GestureRecognizers>
-                                </StackLayout>
+                                <Frame>
+                                    <StackLayout Padding="10" x:DataType="model:SubItem">
+                                        <Label Text="{Binding Text}" 
+                                               LineBreakMode="NoWrap" 
+                                               Style="{DynamicResource ListItemTextStyle}" 
+                                               FontSize="16" />
+                                        <Label Text="{Binding Description}" 
+                                               LineBreakMode="NoWrap"
+                                               Style="{DynamicResource ListItemDetailTextStyle}"
+                                               FontSize="13" />
+                                        <StackLayout.GestureRecognizers>
+                                            <TapGestureRecognizer 
+                                                NumberOfTapsRequired="1"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:NewItemViewModel}}, Path=SubItemTapped}"		
+                                                CommandParameter="{Binding .}">
+                                            </TapGestureRecognizer>
+                                        </StackLayout.GestureRecognizers>
+                                    </StackLayout>
+                                </Frame>
                             </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
+                        </BindableLayout.ItemTemplate>
+                    </StackLayout>
                 </RefreshView>
+                
+                <ScrollView>
+                    <StackLayout BindableLayout.ItemsSource="{Binding ActivityNotes, Mode=TwoWay}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="model:ActivityNote">
+                                <Frame>
+                                    <Label Text="{Binding Content}"/>
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                                NumberOfTapsRequired="1"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:NewItemViewModel}},Path=NoteTapped}"
+                                                CommandParameter="{Binding .}">
+                                        </TapGestureRecognizer>
+                                    </Frame.GestureRecognizers>
+                                </Frame>
+                                
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+
+                    </StackLayout>
+                </ScrollView>
                 <Button Text="Dodaj etap" Command="{Binding AddSubActivityCommand}" HorizontalOptions="FillAndExpand"></Button>
+                <Button Text="Dodaj notatkę" Command="{Binding AddActivityNoteCommand}" HorizontalOptions="FillAndExpand"></Button>
 
 
 
                 <StackLayout Orientation="Horizontal">
 
-                    <Button Text="Cancel" Command="{Binding CancelCommand}" HorizontalOptions="FillAndExpand"></Button>
-                    <Button Text="Save" Command="{Binding SaveCommand}" HorizontalOptions="FillAndExpand"></Button>
+                    <Button Text="Anuluj" Command="{Binding CancelCommand}" HorizontalOptions="FillAndExpand"></Button>
+                    <Button Text="Zapisz" Command="{Binding SaveCommand}" HorizontalOptions="FillAndExpand"></Button>
                 </StackLayout>
             </StackLayout>
         </ScrollView>
