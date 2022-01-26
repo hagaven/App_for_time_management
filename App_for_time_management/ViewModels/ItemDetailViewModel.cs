@@ -20,8 +20,11 @@ namespace App_for_time_management.ViewModels
         private TimeSpan deadlineTime;
         private string eisenhower;
         private string timeSensitive;
+        private bool isCyclic;
+        private string cyclePeriod;
         private TimeSpan duration;
         private bool isDone;
+        private bool cycleVisibility;
 
 
         public ObservableCollection<SubItem> SubActivities { get; }
@@ -127,21 +130,41 @@ namespace App_for_time_management.ViewModels
             get => isDone;
             set => SetProperty(ref isDone, value);
         }
-
+        public bool IsCyclic
+        {
+            get => isCyclic;
+            set
+            {
+                SetProperty(ref isCyclic, value);
+                item.IsCyclic = value;
+                DataStore.UpdateItemAsync(item);
+            }
+        }
+        public string CyclePeriod
+        {
+            get => cyclePeriod;
+            set
+            {
+                SetProperty(ref cyclePeriod, value);
+                item.CyclePeriod = value;
+                DataStore.UpdateItemAsync(item);
+            }
+        }
         public SubItem SelectedSubItem
         {
             get => _selectedSubItem;
-            set
-            {
-                SetProperty(ref _selectedSubItem, value);
-                //OnSubItemSelected(value);
-            }
+            set => SetProperty(ref _selectedSubItem, value);
+        }
+
+        public bool CycleVisibility
+        {
+            get => cycleVisibility;
+            set => SetProperty(ref cycleVisibility, value);
         }
         public void OnAppearing()
         {
             IsBusy = true;
             SelectedSubItem = null;
-           
         }
 
         public async void LoadItemId(string itemId)
@@ -149,8 +172,7 @@ namespace App_for_time_management.ViewModels
             try
             {
                 IsBusy = true;
-                var t = DataStore.GetItemAsync(itemId);
-                
+                Task<Item> t = DataStore.GetItemAsync(itemId);
                 item = await t;
                 Id = item.ID;
                 Name = item.Name;
@@ -159,13 +181,15 @@ namespace App_for_time_management.ViewModels
                 DeadlineTime = item.DeadlineTime;
                 Eisenhower = item.Eisenhower;
                 TimeSensitive = IsTimeSensitive(item.TimeSensitive);
+                CycleVisibility = item.TimeSensitive;
+                IsCyclic = item.IsCyclic;
+                CyclePeriod = item.CyclePeriod;
                 Duration = item.Duration;
                 IsDone = item.IsDone;
 
                 lock (SubActivities)
                 {
                     SubActivities.Clear();
-
                     foreach (SubItem subItem in item.SubActivity)
                     {
                         SubActivities.Add(subItem);
@@ -190,12 +214,12 @@ namespace App_for_time_management.ViewModels
                 Debug.WriteLine(itemId);
             }
         }
+         
         public Command DeleteCommand { get; }
         private async void OnDelete()
         {
             await DataStore.DeleteItemAsync(Id);
             await Shell.Current.GoToAsync("..");
-            
         }
 
         public Command DoneCommand { get; }
@@ -219,8 +243,6 @@ namespace App_for_time_management.ViewModels
             {
                 return;
             }
-
-
             await Shell.Current.GoToAsync($"{nameof(SubItemDetailPage)}?{nameof(SubItemDetailViewModel.SubItemId)}={subItem.ID}");
         }
         private async Task ExecuteLoadSubItemsCommand()
@@ -236,7 +258,6 @@ namespace App_for_time_management.ViewModels
                 {
                     SubActivities.Add(subItem);
                 }
-                
             }
             catch (Exception ex)
             {

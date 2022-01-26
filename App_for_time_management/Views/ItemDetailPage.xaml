@@ -18,6 +18,32 @@
             <Label Text="Typ aktywności:" FontSize="Medium" />
             <Label Text="{Binding Eisenhower}" FontSize="Small"/>
             <Label Text="{Binding TimeSensitive}" FontSize="Small"/>
+            <StackLayout IsVisible="{Binding CycleVisibility}">
+                <Grid>
+                    <Label Text="Aktywność cykliczna:"
+                           Grid.Column="0"
+                           Grid.Row="0"/>
+                    <Switch x:Name="Cyclic"
+                            IsToggled="{Binding IsCyclic}"
+                            Grid.Column="1"
+                            Grid.Row="0">
+                    </Switch>
+                </Grid>
+                
+                <Picker x:Name="CyclicType"
+                        Title="Powtarzaj:"
+                        SelectedItem="{Binding CyclePeriod, Mode=TwoWay}"
+                        IsVisible="{Binding Source={x:Reference Cyclic},Path=IsToggled}">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>Codziennie</x:String>
+                            <x:String>Co tydzień</x:String>
+                            <x:String>Co miesiąc</x:String>
+                            <x:String>Co rok</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+            </StackLayout>
             <Label Text="Przewidywany czas trwania:" FontSize="Small"/>
             <Label Text="{Binding Duration}" FontSize="Small"/>
             <StackLayout Orientation="Horizontal">

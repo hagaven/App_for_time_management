@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace App_for_time_management.ViewModels
@@ -17,6 +19,8 @@ namespace App_for_time_management.ViewModels
         public Command<Item> ItemTapped { get; }
         private TimeSpan planned;
         private TimeSpan start;
+        private TimeSpan end;
+        private TimeSpan break_duration;
 
         public ScheduleViewModel()
         {
@@ -35,25 +39,31 @@ namespace App_for_time_management.ViewModels
             Debug.WriteLine("ex load");
             IsBusy = true;
             planned = new TimeSpan();
-            start = new TimeSpan(8, 0, 0);
+            DateTime startDT = Preferences.Get("start", new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 8, 0, 0));
+            DateTime endDT = Preferences.Get("end", new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 22, 0, 0));
+            int breakDT = Preferences.Get("break", 10);
+            start = new TimeSpan(startDT.Hour, startDT.Minute, startDT.Second);
+            end = new TimeSpan(endDT.Hour, endDT.Minute, endDT.Second);
+            break_duration = new TimeSpan(0, breakDT, 0);
             try
             {
                 Items.Clear();
-                IEnumerable<Item> items = await App.Database.GetItemsAsync(true);
+                var items = (await App.Database.GetItemsAsync(true)).ToList();
                 List<Item> temporaryList = new List<Item>();
                 foreach (var item in items)
                 {
-                    if (item.TimeSensitive && (item.DeadlineDate.Date == DateTime.Now.Date))
+                    DateTime minimalStartTime = item.DeadlineDate.Subtract(item.Duration);
+                    if (item.TimeSensitive && (minimalStartTime.Date == DateTime.Now.Date))
                     {
                         ScheduledItem scheduled = new ScheduledItem
                         {
-                            StartTime = start,
-                            Scheduled = item,
+                            StartTime = new TimeSpan(minimalStartTime.Hour,minimalStartTime.Minute,0),
+                            Scheduled = item
                             
                         };
                         Items.Add(scheduled);
                         planned = planned.Add(scheduled.Scheduled.Duration);
-                        start = start.Add(scheduled.Scheduled.Duration).Add(new TimeSpan(0,15,0));
+                        start = start.Add(scheduled.Scheduled.Duration).Add(break_duration);
                         foreach(var sub in item.SubActivity)
                         {
                             scheduled.SubActivities.Add(sub);
@@ -79,7 +89,7 @@ namespace App_for_time_management.ViewModels
                                     futureDate = item.DeadlineDate.AddYears(10);
                                     break;
                             }
-                            Item powtorzony = new Item()
+                            Item repeated = new Item()
                             {
                                 ID = Guid.NewGuid().ToString(),
                                 Name = item.Name,
@@ -94,6 +104,12 @@ namespace App_for_time_management.ViewModels
                                 IsCyclic = item.IsCyclic,
                                 CyclePeriod = item.CyclePeriod
                             };
+                            
+                            
+                            if (!items.Exists(i => repeated.Name.Equals(i.Name) && repeated.DeadlineDate.Equals(i.DeadlineDate)))
+                            {
+                                App.Database.AddItemAsync(repeated);
+                            }
                         }
 
 
@@ -173,7 +189,7 @@ namespace App_for_time_management.ViewModels
                 });
                 foreach(var item in temporaryList)
                 {
-                    if (planned.CompareTo(new TimeSpan(9, 10, 0)) > 0)
+                    if ((planned.Ticks / end.Ticks) > 0.6)
                     {
                         break;
                     }
@@ -203,6 +219,20 @@ namespace App_for_time_management.ViewModels
                                 }
                             }
                         }
+                        TimeSpan subActivitiesDuration = new TimeSpan();
+                        foreach (SubItem sub in subItems)
+                        {
+                            subActivitiesDuration = subActivitiesDuration.Add(sub.Duration);
+                        }
+                        item.Duration = subItems.Count > 0 ? subActivitiesDuration : item.Duration;
+                        foreach (var i in Items)
+                        {
+                            if ((i.StartTime < start)&&(start < i.Scheduled.DeadlineTime))
+                            {
+                                start = i.Scheduled.DeadlineTime.Add(break_duration);
+                            }
+                        }
+                        item.DeadlineTime = start.Add(item.Duration);
                         ScheduledItem scheduled = new ScheduledItem
                         {
                             StartTime = start,
@@ -210,14 +240,8 @@ namespace App_for_time_management.ViewModels
                             SubActivities = subItems
                         };
                         Items.Add(scheduled);
-                        TimeSpan subActivitiesDuration = new TimeSpan();
-                        foreach (SubItem sub in scheduled.SubActivities)
-                        {
-                            subActivitiesDuration = subActivitiesDuration.Add(sub.Duration);
-                        }
-                        planned = scheduled.SubActivities.Count > 0 ? planned.Add(subActivitiesDuration) : planned.Add(scheduled.Scheduled.Duration);
-
-                        start = scheduled.SubActivities.Count > 0 ? start.Add(subActivitiesDuration).Add(new TimeSpan(0, 15, 0))  : start.Add(scheduled.Scheduled.Duration).Add(new TimeSpan(0, 15, 0));
+                        planned = planned.Add(scheduled.Scheduled.Duration);
+                        start = start.Add(scheduled.Scheduled.Duration).Add(break_duration);
                     }
                 }
 

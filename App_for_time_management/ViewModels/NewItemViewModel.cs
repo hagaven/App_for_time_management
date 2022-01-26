@@ -211,12 +211,12 @@ namespace App_for_time_management.ViewModels
             IsBusy = true;
 
             try
-            {   
-                var subItems = await App.Database.GetSubItemsByParentIDAsync(id, true);
+            {
+                IEnumerable<SubItem> subItems = await App.Database.GetSubItemsByParentIDAsync(id, true);
                 lock (SubActivities)
                 {
                     SubActivities.Clear();
-                    foreach (var subItem in subItems)
+                    foreach (SubItem subItem in subItems)
                     {
                         SubActivities.Add(subItem);
                     }

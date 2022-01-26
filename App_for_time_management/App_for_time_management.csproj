@@ -17,6 +17,9 @@
     <Compile Update="Views\NewSubItemPage.xaml.cs">
       <DependentUpon>NewSubItemPage.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\SettingsPage.xaml.cs">
+      <DependentUpon>SettingsPage.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\SubItemDetailPage.xaml.cs">
       <DependentUpon>SubItemDetailPage.xaml</DependentUpon>
     </Compile>
@@ -27,6 +30,9 @@
 
   <ItemGroup>
     <EmbeddedResource Update="Views\NewSubItemPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Views\SettingsPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Views\SubItemDetailPage.xaml">

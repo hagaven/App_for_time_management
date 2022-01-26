@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:viewmodels="clr-namespace:App_for_time_management.ViewModels" x:DataType="viewmodels:SettingsViewModel"
+             x:Class="App_for_time_management.Views.SettingsPage">
+    <ContentPage.Content>
+        <StackLayout>
+            <Label Text="Początek dnia"/>
+            <TimePicker x:Name="StartTimePicker"
+                        Time="{Binding StartTime, Mode=TwoWay}"/>
+            <Label Text="Koniec dnia"/>
+            <TimePicker x:Name="EndTimePicker"
+                        Time="{Binding EndTime, Mode=TwoWay}"/>
+            <Label Text="Długość przerwy pomiędzy aktywnościami"/>
+            <Slider Minimum="0"
+                    Maximum="59"
+                    Value="{Binding BreakTime, Mode=TwoWay}"
+                    ValueChanged="BreakTimeSlider_ValueChanged"/>
+            <Label x:Name="breakCtrl"
+                       Text="{Binding BreakCtrl,Mode=TwoWay}"></Label>
+            <StackLayout Orientation="Horizontal">
+
+                <Button Text="Anuluj" Command="{Binding CancelCommand}" HorizontalOptions="FillAndExpand"></Button>
+                <Button Text="Zapisz" Command="{Binding SaveCommand}" HorizontalOptions="FillAndExpand"></Button>
+            </StackLayout>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
