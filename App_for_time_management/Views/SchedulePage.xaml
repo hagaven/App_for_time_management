@@ -36,7 +36,7 @@
                                              x:Name="SubItemsViewList">
                                     <BindableLayout.ItemTemplate>
                                         <DataTemplate>
-                                            <StackLayout x:DataType="model:SubItem"
+                                            <StackLayout x:DataType="model:SubActivity"
                                                          Orientation="Horizontal"
                                                          HorizontalOptions="FillAndExpand">
                                                 <Label Text="{Binding Text}"/>

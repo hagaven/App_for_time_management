@@ -13,10 +13,10 @@ namespace App_for_time_management.ViewModels
 {
     public class ScheduleViewModel:BaseViewModel
     {
-        private Item _selectedItem;
+        private Activity _selectedItem;
         public ObservableCollection<ScheduledItem> Items { get; }
         public Command LoadItemsCommand { get; }
-        public Command<Item> ItemTapped { get; }
+        public Command<Activity> ItemTapped { get; }
         private TimeSpan planned;
         private TimeSpan start;
         private TimeSpan end;
@@ -27,11 +27,7 @@ namespace App_for_time_management.ViewModels
             Title = "Harmonogram";
             Items = new ObservableCollection<ScheduledItem>();
             LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
-
-            ItemTapped = new Command<Item>(OnItemSelected);
-            
-
-            
+            ItemTapped = new Command<Activity>(OnItemSelected);
         }
 
         public async Task ExecuteLoadItemsCommand()
@@ -49,25 +45,30 @@ namespace App_for_time_management.ViewModels
             {
                 Items.Clear();
                 var items = (await App.Database.GetItemsAsync(true)).ToList();
-                List<Item> temporaryList = new List<Item>();
+                List<Activity> temporaryList = new List<Activity>();
                 foreach (var item in items)
                 {
                     DateTime minimalStartTime = item.DeadlineDate.Subtract(item.Duration);
+                    TimeSpan minTime = item.DeadlineTime.Subtract(item.Duration);
                     if (item.TimeSensitive && (minimalStartTime.Date == DateTime.Now.Date))
                     {
                         ScheduledItem scheduled = new ScheduledItem
                         {
-                            StartTime = new TimeSpan(minimalStartTime.Hour,minimalStartTime.Minute,0),
-                            Scheduled = item
-                            
+                            StartTime = minTime,
+                            Scheduled = item,
+                            SubActivities = new ObservableCollection<SubActivity>()
                         };
-                        Items.Add(scheduled);
+                        
                         planned = planned.Add(scheduled.Scheduled.Duration);
-                        start = start.Add(scheduled.Scheduled.Duration).Add(break_duration);
-                        foreach(var sub in item.SubActivity)
+                        //start = start.Add(scheduled.Scheduled.Duration).Add(break_duration);
+                        if(item.SubActivity.Count!=0)
                         {
-                            scheduled.SubActivities.Add(sub);
+                            foreach (var sub in item.SubActivity)
+                            {
+                                scheduled.SubActivities.Add(sub);
+                            }
                         }
+                        Items.Add(scheduled);
                         if (item.IsCyclic)
                         {
                             DateTime futureDate;
@@ -89,7 +90,7 @@ namespace App_for_time_management.ViewModels
                                     futureDate = item.DeadlineDate.AddYears(10);
                                     break;
                             }
-                            Item repeated = new Item()
+                            Activity repeated = new Activity()
                             {
                                 ID = Guid.NewGuid().ToString(),
                                 Name = item.Name,
@@ -131,7 +132,7 @@ namespace App_for_time_management.ViewModels
                     {
                         case "Ważne i pilne":
                             {
-                                pMultiplier = 1.5;
+                                pMultiplier = 0.5;
                                 break;
                             }
                         case "Ważne i niepilne":
@@ -141,12 +142,12 @@ namespace App_for_time_management.ViewModels
                             }
                         case "Nieważne i pilne":
                             {
-                                pMultiplier = 1.25;
+                                pMultiplier = 1.5;
                                 break;
                             }
                         case "Nieważne i niepilne":
                             {
-                                pMultiplier = 0.5;
+                                pMultiplier = 2.0;
                                 break;
                             }
                         default:
@@ -159,7 +160,7 @@ namespace App_for_time_management.ViewModels
                     {
                         case "Ważne i pilne":
                             {
-                                qMultiplier = 1.5;
+                                qMultiplier = 0.5;
                                 break;
                             }
                         case "Ważne i niepilne":
@@ -169,12 +170,12 @@ namespace App_for_time_management.ViewModels
                             }
                         case "Nieważne i pilne":
                             {
-                                qMultiplier = 1.25;
+                                qMultiplier = 1.5;
                                 break;
                             }
                         case "Nieważne i niepilne":
                             {
-                                qMultiplier = 0.5;
+                                qMultiplier = 2.0;
                                 break;
                             }
                         default:
@@ -196,7 +197,7 @@ namespace App_for_time_management.ViewModels
                     if (!item.IsDone)
                     {
                         int subActivityCount = item.SubActivity.Count;
-                        ObservableCollection<SubItem> subItems = new ObservableCollection<SubItem>();
+                        ObservableCollection<SubActivity> subItems = new ObservableCollection<SubActivity>();
                         if(!(subActivityCount == 0) && !(subActivityCount == 1))
                         {
                             int daysLeft = item.DeadlineDate.Subtract(DateTime.Now).Days;
@@ -206,7 +207,7 @@ namespace App_for_time_management.ViewModels
                                 numberOfSubActivities = (int)Math.Ceiling((double)(subActivityCount / daysLeft));
                             }
                             int i = 0;
-                            foreach (SubItem subItem in item.SubActivity)
+                            foreach (SubActivity subItem in item.SubActivity)
                             {
                                 if (!(i < numberOfSubActivities))
                                 {
@@ -220,7 +221,7 @@ namespace App_for_time_management.ViewModels
                             }
                         }
                         TimeSpan subActivitiesDuration = new TimeSpan();
-                        foreach (SubItem sub in subItems)
+                        foreach (SubActivity sub in subItems)
                         {
                             subActivitiesDuration = subActivitiesDuration.Add(sub.Duration);
                         }
@@ -244,8 +245,12 @@ namespace App_for_time_management.ViewModels
                         start = start.Add(scheduled.Scheduled.Duration).Add(break_duration);
                     }
                 }
-
-
+                var temp = new ObservableCollection<ScheduledItem>(Items.OrderBy(i => i.StartTime));
+                Items.Clear();
+                foreach(var t in temp)
+                {
+                    Items.Add(t);
+                }
             }
             catch (Exception ex)
             {
@@ -263,7 +268,7 @@ namespace App_for_time_management.ViewModels
             SelectedItem = null;
 
         }
-        public Item SelectedItem
+        public Activity SelectedItem
         {
             get => _selectedItem;
             set
@@ -273,7 +278,7 @@ namespace App_for_time_management.ViewModels
             }
         }
 
-        private async void OnItemSelected(Item item)
+        private async void OnItemSelected(Activity item)
         {
             if (item == null)
             {

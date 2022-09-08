@@ -16,7 +16,7 @@ namespace App_for_time_management.ViewModels
         private string text;
         private string description;
         private TimeSpan duration;
-        private SubItem subItem;
+        private SubActivity subItem;
         private string activityTitle;
         public Command<SubActivityNote> NoteTapped { get; }
 

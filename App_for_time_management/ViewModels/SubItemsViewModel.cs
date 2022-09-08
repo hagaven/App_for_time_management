@@ -12,18 +12,18 @@ namespace App_for_time_management.ViewModels
 {
     class SubItemsViewModel:BaseViewModel
     {
-        private SubItem _selectedSubItem;
-        public ObservableCollection<SubItem> SubItems { get; }
+        private SubActivity _selectedSubItem;
+        public ObservableCollection<SubActivity> SubItems { get; }
         public Command LoadItemsCommand { get; }
         public Command AddSubItemCommand { get; }
-        public Command<SubItem> SubItemTapped { get; }
+        public Command<SubActivity> SubItemTapped { get; }
         public SubItemsViewModel()
         {
             Title = "Etapy";
-            SubItems = new ObservableCollection<SubItem>();
+            SubItems = new ObservableCollection<SubActivity>();
             LoadItemsCommand = new Command(async () => await ExecuteLoadSubItemsCommand());
 
-            SubItemTapped = new Command<SubItem>(OnSubItemSelected);
+            SubItemTapped = new Command<SubActivity>(OnSubItemSelected);
 
             AddSubItemCommand = new Command(OnAddSubItem);
         }
@@ -57,7 +57,7 @@ namespace App_for_time_management.ViewModels
             SelectedSubItem = null;
         }
 
-        public SubItem SelectedSubItem
+        public SubActivity SelectedSubItem
         {
             get => _selectedSubItem;
             set
@@ -73,7 +73,7 @@ namespace App_for_time_management.ViewModels
         }
 
         
-        private async void OnSubItemSelected(SubItem subItem)
+        private async void OnSubItemSelected(SubActivity subItem)
         {
             if (subItem == null)
                 return;

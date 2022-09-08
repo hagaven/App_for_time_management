@@ -10,7 +10,7 @@ namespace App_for_time_management.Views
 {
     public partial class NewSubItemPage : ContentPage
     {
-        public Item Item { get; set; }
+        public Activity Item { get; set; }
 
         public NewSubItemPage()
         {

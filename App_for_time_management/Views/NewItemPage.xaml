@@ -96,7 +96,7 @@
                         <BindableLayout.ItemTemplate>
                             <DataTemplate>
                                 <Frame>
-                                    <StackLayout Padding="10" x:DataType="model:SubItem">
+                                    <StackLayout Padding="10" x:DataType="model:SubActivity">
                                         <Label Text="{Binding Text}" 
                                                LineBreakMode="NoWrap" 
                                                Style="{DynamicResource ListItemTextStyle}" 

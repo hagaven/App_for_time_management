@@ -8,17 +8,17 @@ using SQLiteNetExtensionsAsync.Extensions;
 
 namespace App_for_time_management.Services
 {
-    public class MockDataStore : IDataStore
+    public class DataStore : IDataStore
     {
-        private readonly List<Item> items;
-        private readonly List<SubItem> subItems;
+        private readonly List<Activity> items;
+        private readonly List<SubActivity> subItems;
         private static SQLiteAsyncConnection database;
 
-        public MockDataStore()
+        public DataStore()
         {
             
-            items = new List<Item>();
-            subItems = new List<SubItem>();
+            items = new List<Activity>();
+            subItems = new List<SubActivity>();
 
         }
         static async Task Init()
@@ -29,26 +29,24 @@ namespace App_for_time_management.Services
             }
             string dbPath = Path.Combine(Xamarin.Essentials.FileSystem.AppDataDirectory, "base.db3");
             database = new SQLiteAsyncConnection(dbPath);
-            //await database.DropTableAsync<SubItem>();
-            //await database.DropTableAsync<Item>();
-            await database.CreateTableAsync<Item>();
-            await database.CreateTableAsync<SubItem>();
+            await database.CreateTableAsync<Activity>();
+            await database.CreateTableAsync<SubActivity>();
             await database.CreateTableAsync<ActivityNote>();
             await database.CreateTableAsync<SubActivityNote>();
 
 
         }
 
-        public async Task<int> AddItemAsync(Item item)
+        public async Task<int> AddItemAsync(Activity item)
         {
             items.Add(item);
             await Init();
             return await database.InsertAsync(item); ;
         }
 
-        public async Task<int> UpdateItemAsync(Item item)
+        public async Task<int> UpdateItemAsync(Activity item)
         {
-            var oldItem = items.Where((Item arg) => arg.ID == item.ID).FirstOrDefault();
+            var oldItem = items.Where((Activity arg) => arg.ID == item.ID).FirstOrDefault();
             items.Remove(oldItem);
             items.Add(item);
             await Init();
@@ -57,37 +55,37 @@ namespace App_for_time_management.Services
 
         public async Task<int> DeleteItemAsync(string id)
         {
-            var oldItem = items.Where((Item arg) => arg.ID == id).FirstOrDefault();
+            var oldItem = items.Where((Activity arg) => arg.ID == id).FirstOrDefault();
             items.Remove(oldItem);
             await Init();
-            return await database.DeleteAsync<Item>(id);
+            return await database.DeleteAsync<Activity>(id);
         }
 
-        public async Task<Item> GetItemAsync(string id)
+        public async Task<Activity> GetItemAsync(string id)
         {
             await Init();
-            return await database.GetWithChildrenAsync<Item>(id);
+            return await database.GetWithChildrenAsync<Activity>(id);
         }
 
 
 
-        public async Task<IEnumerable<Item>> GetItemsAsync(bool forceRefresh = false)
+        public async Task<IEnumerable<Activity>> GetItemsAsync(bool forceRefresh = false)
         {
             await Init();
-            var itemList = await database.GetAllWithChildrenAsync<Item>();
+            var itemList = await database.GetAllWithChildrenAsync<Activity>();
             return itemList;
         }
 
-        public async Task<int> AddSubItemAsync(SubItem subItem)
+        public async Task<int> AddSubItemAsync(SubActivity subItem)
         {
             subItems.Add(subItem);
             await Init();
             return await database.InsertAsync(subItem);
         }
 
-        public async Task<int> UpdateSubItemAsync(SubItem subItem)
+        public async Task<int> UpdateSubItemAsync(SubActivity subItem)
         {
-            var oldSubItem = subItems.Where((SubItem arg) => arg.ID == subItem.ID).FirstOrDefault();
+            var oldSubItem = subItems.Where((SubActivity arg) => arg.ID == subItem.ID).FirstOrDefault();
             subItems.Remove(oldSubItem);
             subItems.Add(subItem);
             await Init();
@@ -96,31 +94,31 @@ namespace App_for_time_management.Services
 
         public async Task<int> DeleteSubItemAsync(string id)
         {
-            var oldSubItem = subItems.Where((SubItem arg) => arg.ID == id).FirstOrDefault();
+            var oldSubItem = subItems.Where((SubActivity arg) => arg.ID == id).FirstOrDefault();
             subItems.Remove(oldSubItem);
             await Init();
-            return await database.DeleteAsync<SubItem>(id);
+            return await database.DeleteAsync<SubActivity>(id);
         }
 
-        public async Task<SubItem> GetSubItemAsync(string id)
+        public async Task<SubActivity> GetSubItemAsync(string id)
         {
             await Init();
             
-            return await database.GetWithChildrenAsync<SubItem>(id);
+            return await database.GetWithChildrenAsync<SubActivity>(id);
         }
 
 
 
-        public async Task<IEnumerable<SubItem>> GetSubItemsAsync(bool forceRefresh = false)
+        public async Task<IEnumerable<SubActivity>> GetSubItemsAsync(bool forceRefresh = false)
         {
             await Init();
-            var subItemList = await database.Table<SubItem>().ToListAsync();
+            var subItemList = await database.Table<SubActivity>().ToListAsync();
             return subItemList;
         }
-        public async Task<IEnumerable<SubItem>> GetSubItemsByParentIDAsync(string id,bool forceRefresh = false)
+        public async Task<IEnumerable<SubActivity>> GetSubItemsByParentIDAsync(string id,bool forceRefresh = false)
         {
             await Init();
-            Item it = await GetItemAsync(id);
+            Activity it = await GetItemAsync(id);
             return it.SubActivity;
         }
 

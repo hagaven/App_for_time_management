@@ -11,10 +11,10 @@ namespace App_for_time_management.Models
 
         public string Content { get; set; }
 
-        [ForeignKey(typeof(SubItem))]
+        [ForeignKey(typeof(SubActivity))]
         public string ParentID { get; set; }
 
         [ManyToOne(CascadeOperations = CascadeOperation.All)]
-        public SubItem ParentActivity { get; set; }
+        public SubActivity ParentActivity { get; set; }
     }
 }

@@ -12,7 +12,7 @@ namespace App_for_time_management.ViewModels
     [QueryProperty(nameof(ItemId), nameof(ItemId))]
     public class ItemDetailViewModel : BaseViewModel
     {
-        private Item item;
+        private Activity item;
         private string itemId;
         private string name;
         private string description;
@@ -27,15 +27,15 @@ namespace App_for_time_management.ViewModels
         private bool cycleVisibility;
 
 
-        public ObservableCollection<SubItem> SubActivities { get; }
+        public ObservableCollection<SubActivity> SubActivities { get; }
         public ObservableCollection<ActivityNote> ActivityNotes { get; set; }
         public Command AddActivityNoteCommand { get; private set; }
         public ICommand LoadSubItemsCommand { get; }
-        public Command<SubItem> SubItemTapped { get; }
+        public Command<SubActivity> SubItemTapped { get; }
 
         public Command<ActivityNote> NoteTapped { get; }
         
-        private SubItem _selectedSubItem;
+        private SubActivity _selectedSubItem;
 
         public double ListHeight { get; set; } = 50;
         
@@ -45,8 +45,8 @@ namespace App_for_time_management.ViewModels
             DeleteCommand = new Command(OnDelete);
             DoneCommand = new Command(OnDone);
             LoadSubItemsCommand = new Command(async () => await ExecuteLoadSubItemsCommand());
-            SubItemTapped = new Command<SubItem>(OnSubItemSelected);
-            SubActivities = new ObservableCollection<SubItem>();
+            SubItemTapped = new Command<SubActivity>(OnSubItemSelected);
+            SubActivities = new ObservableCollection<SubActivity>();
             ActivityNotes = new ObservableCollection<ActivityNote>();
             AddActivityNoteCommand = new Command(OnAddActivityNote);
             AddSubActivityCommand = new Command(OnAddSubActivity);
@@ -150,7 +150,7 @@ namespace App_for_time_management.ViewModels
                 DataStore.UpdateItemAsync(item);
             }
         }
-        public SubItem SelectedSubItem
+        public SubActivity SelectedSubItem
         {
             get => _selectedSubItem;
             set => SetProperty(ref _selectedSubItem, value);
@@ -172,7 +172,7 @@ namespace App_for_time_management.ViewModels
             try
             {
                 IsBusy = true;
-                Task<Item> t = DataStore.GetItemAsync(itemId);
+                Task<Activity> t = DataStore.GetItemAsync(itemId);
                 item = await t;
                 Id = item.ID;
                 Name = item.Name;
@@ -190,7 +190,7 @@ namespace App_for_time_management.ViewModels
                 lock (SubActivities)
                 {
                     SubActivities.Clear();
-                    foreach (SubItem subItem in item.SubActivity)
+                    foreach (SubActivity subItem in item.SubActivity)
                     {
                         SubActivities.Add(subItem);
                     }
@@ -237,7 +237,7 @@ namespace App_for_time_management.ViewModels
             return timeSensitivity ? "Aktywność wrażliwa na czas wykonania" : "Aktywność nie jest wrażliwa na czas wykonania";
         }
 
-        private async void OnSubItemSelected(SubItem subItem)
+        private async void OnSubItemSelected(SubActivity subItem)
         {
             if (subItem == null)
             {
@@ -251,10 +251,10 @@ namespace App_for_time_management.ViewModels
 
             try
             {
-                System.Collections.Generic.IEnumerable<SubItem> subItems = await App.Database.GetSubItemsByParentIDAsync(Id);
+                System.Collections.Generic.IEnumerable<SubActivity> subItems = await App.Database.GetSubItemsByParentIDAsync(Id);
                 SubActivities.Clear();
                 
-                foreach (SubItem subItem in subItems)
+                foreach (SubActivity subItem in subItems)
                 {
                     SubActivities.Add(subItem);
                 }

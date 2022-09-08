@@ -9,14 +9,14 @@ namespace App_for_time_management
 {
     public partial class App : Application
     {
-        static MockDataStore database;
-        public static MockDataStore Database
+        static DataStore database;
+        public static DataStore Database
         {
             get
             {
                 if (database == null)
                 {
-                    database = new MockDataStore();
+                    database = new DataStore();
 
                 }
                 return database;
@@ -26,7 +26,7 @@ namespace App_for_time_management
         {
             InitializeComponent();
 
-            DependencyService.Register<MockDataStore>();
+            DependencyService.Register<DataStore>();
             MainPage = new AppShell();
         }
 

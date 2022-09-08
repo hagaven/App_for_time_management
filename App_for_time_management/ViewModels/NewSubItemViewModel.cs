@@ -1,10 +1,6 @@
 ﻿using App_for_time_management.Models;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Text;
-using System.Windows.Input;
 using Xamarin.Forms;
 
 namespace App_for_time_management.ViewModels
@@ -114,7 +110,7 @@ namespace App_for_time_management.ViewModels
         private async void OnSave()
         {
             TimeSpan duration = new TimeSpan(DurationHours, DurationMinutes, 0);
-            SubItem newSubItem = new SubItem()
+            SubActivity newSubItem = new SubActivity()
             {
                 ID = id,
                 Text = Text,

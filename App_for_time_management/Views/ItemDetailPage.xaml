@@ -62,7 +62,7 @@
                         <BindableLayout.ItemTemplate>
                             <DataTemplate>
                                 <StackLayout Padding="10" 
-                                             x:DataType="model:SubItem">
+                                             x:DataType="model:SubActivity">
                                     <Frame>
                                         <StackLayout Orientation="Horizontal">
                                             <Label Text="{Binding Text}" 

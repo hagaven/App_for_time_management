@@ -8,7 +8,7 @@ using SQLiteNetExtensions.Attributes;
 namespace App_for_time_management.Models
 {
     [Table("SubActivities")]
-    public class SubItem
+    public class SubActivity
     {
         [PrimaryKey]
         public string ID { get; set; }
@@ -23,11 +23,11 @@ namespace App_for_time_management.Models
 
         public bool IsDone { get; set; }
 
-        [ForeignKey(typeof(Item))]
+        [ForeignKey(typeof(Activity))]
         public string ParentID { get; set; }
 
         [ManyToOne(CascadeOperations = CascadeOperation.All)]
-        public Item ParentActivity { get; set; }
+        public Activity ParentActivity { get; set; }
 
         [OneToMany(CascadeOperations = CascadeOperation.All)]
         public List<SubActivityNote> SubActivityNotes { get; set; }

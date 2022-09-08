@@ -29,11 +29,11 @@ namespace App_for_time_management.ViewModels
         private string durctrl2;
         private bool alreadyPresent;
         private string id;
-        public ObservableCollection<SubItem> SubActivities { get; set; }
+        public ObservableCollection<SubActivity> SubActivities { get; set; }
         public ObservableCollection<ActivityNote> ActivityNotes { get; set; }
         public double ListHeight { get; set; } = 100;
-        public Command<SubItem> SubItemTapped { get; }
-        private SubItem _selectedSubItem;
+        public Command<SubActivity> SubItemTapped { get; }
+        private SubActivity _selectedSubItem;
         public Command SaveCommand { get; }
         public Command CancelCommand { get; }
         public Command AddSubActivityCommand { get; }
@@ -48,9 +48,9 @@ namespace App_for_time_management.ViewModels
             PropertyChanged +=
                 (_, __) => SaveCommand.ChangeCanExecute();
             id = Guid.NewGuid().ToString();
-            SubActivities = new ObservableCollection<SubItem>();
+            SubActivities = new ObservableCollection<SubActivity>();
             ActivityNotes = new ObservableCollection<ActivityNote>();
-            SubItemTapped = new Command<SubItem>(OnSubItemSelected);
+            SubItemTapped = new Command<SubActivity>(OnSubItemSelected);
             LoadSubItemsCommand = new Command(async () => await ExecuteLoadSubItemsCommand());
             AddActivityNoteCommand = new Command(OnAddActivityNote);
             alreadyPresent = false;
@@ -63,7 +63,7 @@ namespace App_for_time_management.ViewModels
             {
                 var t = DataStore.GetItemAsync(id);
 
-                Item item = await t;
+                Activity item = await t;
                 
                 Text = item.Name;
                 Description = item.Description;
@@ -95,7 +95,7 @@ namespace App_for_time_management.ViewModels
             SelectedSubItem = null;
             LoadItem();
         }
-        public SubItem SelectedSubItem
+        public SubActivity SelectedSubItem
         {
             get => _selectedSubItem;
             set
@@ -107,7 +107,7 @@ namespace App_for_time_management.ViewModels
         private async void OnAddSubActivity()
         {
             TimeSpan duration = new TimeSpan(DurationHours, DurationMinutes, 0);
-            Item newItem = new Item()
+            Activity newItem = new Activity()
             {
                 ID = id,
                 Name = Text,
@@ -172,7 +172,7 @@ namespace App_for_time_management.ViewModels
         {
             TimeSpan duration = new TimeSpan(DurationHours, DurationMinutes, 0);
 
-            Item newItem = new Item()
+            Activity newItem = new Activity()
             {
                 ID = id,
                 Name = Text,
@@ -198,7 +198,7 @@ namespace App_for_time_management.ViewModels
             }
             await Shell.Current.GoToAsync("..");
         }
-        private async void OnSubItemSelected(SubItem subItem)
+        private async void OnSubItemSelected(SubActivity subItem)
         {
             if (subItem == null)
                 return;
@@ -212,11 +212,11 @@ namespace App_for_time_management.ViewModels
 
             try
             {
-                IEnumerable<SubItem> subItems = await App.Database.GetSubItemsByParentIDAsync(id, true);
+                IEnumerable<SubActivity> subItems = await App.Database.GetSubItemsByParentIDAsync(id, true);
                 lock (SubActivities)
                 {
                     SubActivities.Clear();
-                    foreach (SubItem subItem in subItems)
+                    foreach (SubActivity subItem in subItems)
                     {
                         SubActivities.Add(subItem);
                     }

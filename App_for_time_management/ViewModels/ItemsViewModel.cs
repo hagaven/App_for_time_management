@@ -10,20 +10,20 @@ namespace App_for_time_management.ViewModels
 {
     public class ItemsViewModel : BaseViewModel
     {
-        private Item _selectedItem;
+        private Activity _selectedItem;
 
-        public ObservableCollection<Item> Items { get; }
+        public ObservableCollection<Activity> Items { get; }
         public Command LoadItemsCommand { get; }
         public Command AddItemCommand { get; }
-        public Command<Item> ItemTapped { get; }
+        public Command<Activity> ItemTapped { get; }
 
         public ItemsViewModel()
         {
             Title = "Aktywności";
-            Items = new ObservableCollection<Item>();
+            Items = new ObservableCollection<Activity>();
             LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
 
-            ItemTapped = new Command<Item>(OnItemSelected);
+            ItemTapped = new Command<Activity>(OnItemSelected);
 
             AddItemCommand = new Command(OnAddItem);
         }
@@ -57,7 +57,7 @@ namespace App_for_time_management.ViewModels
             SelectedItem = null;
         }
 
-        public Item SelectedItem
+        public Activity SelectedItem
         {
             get => _selectedItem;
             set
@@ -72,7 +72,7 @@ namespace App_for_time_management.ViewModels
             await Shell.Current.GoToAsync(nameof(NewItemPage));
         }
 
-        private async void OnItemSelected(Item item)
+        private async void OnItemSelected(Activity item)
         {
             if (item == null)
             {

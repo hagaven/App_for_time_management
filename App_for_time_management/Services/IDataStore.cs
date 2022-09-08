@@ -7,18 +7,18 @@ namespace App_for_time_management.Services
 {
     public interface IDataStore
     {
-        Task<int> AddItemAsync(Item item);
-        Task<int> UpdateItemAsync(Item item);
+        Task<int> AddItemAsync(Activity item);
+        Task<int> UpdateItemAsync(Activity item);
         Task<int> DeleteItemAsync(string id);
-        Task<Item> GetItemAsync(string id);
-        Task<IEnumerable<Item>> GetItemsAsync(bool forceRefresh = false);
+        Task<Activity> GetItemAsync(string id);
+        Task<IEnumerable<Activity>> GetItemsAsync(bool forceRefresh = false);
         
-        Task<int> AddSubItemAsync(SubItem subItem);
-        Task<int> UpdateSubItemAsync(SubItem subItem);
+        Task<int> AddSubItemAsync(SubActivity subItem);
+        Task<int> UpdateSubItemAsync(SubActivity subItem);
         Task<int> DeleteSubItemAsync(string id);
-        Task<SubItem> GetSubItemAsync(string id);
-        Task<IEnumerable<SubItem>> GetSubItemsAsync(bool forceRefresh = false);
-        Task<IEnumerable<SubItem>> GetSubItemsByParentIDAsync(string id,bool forceRefresh = false);
+        Task<SubActivity> GetSubItemAsync(string id);
+        Task<IEnumerable<SubActivity>> GetSubItemsAsync(bool forceRefresh = false);
+        Task<IEnumerable<SubActivity>> GetSubItemsByParentIDAsync(string id,bool forceRefresh = false);
         
         Task<int> AddActivityNoteAsync(ActivityNote activityNote);
         Task<int> DeleteActivityNoteAsync(string id);
@@ -29,9 +29,6 @@ namespace App_for_time_management.Services
         Task<int> DeleteSubActivityNoteAsync(string id);
         Task<SubActivityNote> GetSubActivityNoteAsync(string id);
         Task<int> UpdateSubActivityNote(SubActivityNote subActivityNote);
-
-
-
 
     }
 }
