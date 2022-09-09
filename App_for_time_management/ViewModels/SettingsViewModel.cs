@@ -1,8 +1,6 @@
 ﻿using App_for_time_management.Views;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -33,7 +31,7 @@ namespace App_for_time_management.ViewModels
         public string BreakCtrl
         {
             get => breakCtrl;
-            set => SetProperty(ref breakCtrl, value );
+            set => SetProperty(ref breakCtrl, value);
         }
 
         public Command SaveCommand { get; }

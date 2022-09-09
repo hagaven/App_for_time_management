@@ -34,11 +34,11 @@ namespace App_for_time_management.ViewModels
         public Command<SubActivity> SubItemTapped { get; }
 
         public Command<ActivityNote> NoteTapped { get; }
-        
+
         private SubActivity _selectedSubItem;
 
         public double ListHeight { get; set; } = 50;
-        
+
 
         public ItemDetailViewModel()
         {
@@ -59,16 +59,24 @@ namespace App_for_time_management.ViewModels
             {
                 return;
             }
-            
+
             string result = await Shell.Current.DisplayPromptAsync("Notatka", "Treść", cancel: "Anuluj", initialValue: note.Content);
-            if(!string.IsNullOrWhiteSpace(result))
+            if (!string.IsNullOrWhiteSpace(result))
             {
                 int index = ActivityNotes.IndexOf(note);
-                ActivityNotes.Remove(note);
+                if (ActivityNotes.Remove(note))
+                {
+                    Debug.WriteLine("Succesfully removed note");
+                }
+                else
+                {
+                    Debug.WriteLine("Error occured during removing note: couldn't remove note or note wasn't present in collection");
+                }
                 note.Content = result;
                 ActivityNotes.Insert(index, note);
             }
-            await DataStore.UpdateActivityNote(note);
+            int v = await DataStore.UpdateActivityNote(note);
+            Debug.WriteLine("Successfully updated " + v + " note");
         }
 
         public string Id { get; set; }
@@ -114,10 +122,7 @@ namespace App_for_time_management.ViewModels
 
         public string ItemId
         {
-            get
-            {
-                return itemId;
-            }
+            get => itemId;
             set
             {
                 itemId = value;
@@ -135,9 +140,9 @@ namespace App_for_time_management.ViewModels
             get => isCyclic;
             set
             {
-                SetProperty(ref isCyclic, value);
+                _ = SetProperty(ref isCyclic, value);
                 item.IsCyclic = value;
-                DataStore.UpdateItemAsync(item);
+                _ = DataStore.UpdateItemAsync(item);
             }
         }
         public string CyclePeriod
@@ -145,9 +150,9 @@ namespace App_for_time_management.ViewModels
             get => cyclePeriod;
             set
             {
-                SetProperty(ref cyclePeriod, value);
+                _ = SetProperty(ref cyclePeriod, value);
                 item.CyclePeriod = value;
-                DataStore.UpdateItemAsync(item);
+                _ = DataStore.UpdateItemAsync(item);
             }
         }
         public SubActivity SelectedSubItem
@@ -203,7 +208,7 @@ namespace App_for_time_management.ViewModels
                         ActivityNotes.Add(note);
                     }
                 }
-                
+
                 IsBusy = false;
 
             }
@@ -214,11 +219,12 @@ namespace App_for_time_management.ViewModels
                 Debug.WriteLine(itemId);
             }
         }
-         
+
         public Command DeleteCommand { get; }
         private async void OnDelete()
         {
-            await DataStore.DeleteItemAsync(Id);
+            int v = await DataStore.DeleteItemAsync(Id);
+            Debug.WriteLine("Succesfully deleted " + v + " items");
             await Shell.Current.GoToAsync("..");
         }
 
@@ -227,7 +233,7 @@ namespace App_for_time_management.ViewModels
         private async void OnDone()
         {
             item.IsDone = true;
-            await DataStore.UpdateItemAsync(item);
+            _ = await DataStore.UpdateItemAsync(item);
             await Shell.Current.GoToAsync("..");
         }
         public Command AddSubActivityCommand { get; }
@@ -253,7 +259,7 @@ namespace App_for_time_management.ViewModels
             {
                 System.Collections.Generic.IEnumerable<SubActivity> subItems = await App.Database.GetSubItemsByParentIDAsync(Id);
                 SubActivities.Clear();
-                
+
                 foreach (SubActivity subItem in subItems)
                 {
                     SubActivities.Add(subItem);
@@ -281,7 +287,8 @@ namespace App_for_time_management.ViewModels
                 Content = result,
                 ParentID = Id
             };
-            await DataStore.AddActivityNoteAsync(activityNote);
+            int v = await DataStore.AddActivityNoteAsync(activityNote);
+            Debug.WriteLine("Succesfully added " + v + " note(s)");
             ActivityNotes.Add(activityNote);
 
         }

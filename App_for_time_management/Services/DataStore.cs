@@ -16,12 +16,12 @@ namespace App_for_time_management.Services
 
         public DataStore()
         {
-            
+
             items = new List<Activity>();
             subItems = new List<SubActivity>();
 
         }
-        static async Task Init()
+        private static async Task Init()
         {
             if (database != null)
             {
@@ -29,10 +29,10 @@ namespace App_for_time_management.Services
             }
             string dbPath = Path.Combine(Xamarin.Essentials.FileSystem.AppDataDirectory, "base.db3");
             database = new SQLiteAsyncConnection(dbPath);
-            await database.CreateTableAsync<Activity>();
-            await database.CreateTableAsync<SubActivity>();
-            await database.CreateTableAsync<ActivityNote>();
-            await database.CreateTableAsync<SubActivityNote>();
+            _ = await database.CreateTableAsync<Activity>();
+            _ = await database.CreateTableAsync<SubActivity>();
+            _ = await database.CreateTableAsync<ActivityNote>();
+            _ = await database.CreateTableAsync<SubActivityNote>();
 
 
         }
@@ -46,8 +46,8 @@ namespace App_for_time_management.Services
 
         public async Task<int> UpdateItemAsync(Activity item)
         {
-            var oldItem = items.Where((Activity arg) => arg.ID == item.ID).FirstOrDefault();
-            items.Remove(oldItem);
+            Activity oldItem = items.FirstOrDefault((Activity arg) => arg.ID == item.ID);
+            _ = items.Remove(oldItem);
             items.Add(item);
             await Init();
             return await database.UpdateAsync(item);
@@ -55,8 +55,8 @@ namespace App_for_time_management.Services
 
         public async Task<int> DeleteItemAsync(string id)
         {
-            var oldItem = items.Where((Activity arg) => arg.ID == id).FirstOrDefault();
-            items.Remove(oldItem);
+            Activity oldItem = items.FirstOrDefault((Activity arg) => arg.ID == id);
+            _ = items.Remove(oldItem);
             await Init();
             return await database.DeleteAsync<Activity>(id);
         }
@@ -72,7 +72,7 @@ namespace App_for_time_management.Services
         public async Task<IEnumerable<Activity>> GetItemsAsync(bool forceRefresh = false)
         {
             await Init();
-            var itemList = await database.GetAllWithChildrenAsync<Activity>();
+            List<Activity> itemList = await database.GetAllWithChildrenAsync<Activity>();
             return itemList;
         }
 
@@ -85,8 +85,8 @@ namespace App_for_time_management.Services
 
         public async Task<int> UpdateSubItemAsync(SubActivity subItem)
         {
-            var oldSubItem = subItems.Where((SubActivity arg) => arg.ID == subItem.ID).FirstOrDefault();
-            subItems.Remove(oldSubItem);
+            SubActivity oldSubItem = subItems.FirstOrDefault((SubActivity arg) => arg.ID == subItem.ID);
+            _ = subItems.Remove(oldSubItem);
             subItems.Add(subItem);
             await Init();
             return await database.UpdateAsync(subItem);
@@ -94,8 +94,8 @@ namespace App_for_time_management.Services
 
         public async Task<int> DeleteSubItemAsync(string id)
         {
-            var oldSubItem = subItems.Where((SubActivity arg) => arg.ID == id).FirstOrDefault();
-            subItems.Remove(oldSubItem);
+            SubActivity oldSubItem = subItems.FirstOrDefault((SubActivity arg) => arg.ID == id);
+            _ = subItems.Remove(oldSubItem);
             await Init();
             return await database.DeleteAsync<SubActivity>(id);
         }
@@ -103,19 +103,16 @@ namespace App_for_time_management.Services
         public async Task<SubActivity> GetSubItemAsync(string id)
         {
             await Init();
-            
             return await database.GetWithChildrenAsync<SubActivity>(id);
         }
-
-
 
         public async Task<IEnumerable<SubActivity>> GetSubItemsAsync(bool forceRefresh = false)
         {
             await Init();
-            var subItemList = await database.Table<SubActivity>().ToListAsync();
+            List<SubActivity> subItemList = await database.Table<SubActivity>().ToListAsync();
             return subItemList;
         }
-        public async Task<IEnumerable<SubActivity>> GetSubItemsByParentIDAsync(string id,bool forceRefresh = false)
+        public async Task<IEnumerable<SubActivity>> GetSubItemsByParentIDAsync(string id, bool forceRefresh = false)
         {
             await Init();
             Activity it = await GetItemAsync(id);

@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
@@ -28,7 +26,7 @@ namespace App_for_time_management.ViewModels
         private string durctrl1;
         private string durctrl2;
         private bool alreadyPresent;
-        private string id;
+        private readonly string id;
         public ObservableCollection<SubActivity> SubActivities { get; set; }
         public ObservableCollection<ActivityNote> ActivityNotes { get; set; }
         public double ListHeight { get; set; } = 100;
@@ -55,16 +53,16 @@ namespace App_for_time_management.ViewModels
             AddActivityNoteCommand = new Command(OnAddActivityNote);
             alreadyPresent = false;
             DeadlineDate = DateTime.Now;
-            NoteTapped = new Command<ActivityNote>(OnNoteTapped); 
+            NoteTapped = new Command<ActivityNote>(OnNoteTapped);
         }
         public async void LoadItem()
         {
             try
             {
-                var t = DataStore.GetItemAsync(id);
+                Task<Activity> t = DataStore.GetItemAsync(id);
 
                 Activity item = await t;
-                
+
                 Text = item.Name;
                 Description = item.Description;
                 DeadlineDate = item.DeadlineDate;
@@ -77,12 +75,11 @@ namespace App_for_time_management.ViewModels
                 lock (SubActivities)
                 {
                     SubActivities.Clear();
-                    foreach (var s in item.SubActivity)
+                    foreach (SubActivity s in item.SubActivity)
                     {
                         SubActivities.Add(s);
                     }
                 }
-                
             }
             catch (Exception e)
             {
@@ -100,7 +97,7 @@ namespace App_for_time_management.ViewModels
             get => _selectedSubItem;
             set
             {
-                SetProperty(ref _selectedSubItem, value);
+                _ = SetProperty(ref _selectedSubItem, value);
                 OnSubItemSelected(value);
             }
         }
@@ -123,18 +120,20 @@ namespace App_for_time_management.ViewModels
             };
             if (!alreadyPresent)
             {
-                await DataStore.AddItemAsync(newItem);
+                int v = await DataStore.AddItemAsync(newItem);
+                Debug.WriteLine("Succesfully added " + v + "activities");
             }
             else
             {
-                await DataStore.UpdateItemAsync(newItem);
+                int v = await DataStore.UpdateItemAsync(newItem);
+                Debug.WriteLine("Succesfully updated " + v + "activities");
             }
             await Shell.Current.GoToAsync($"{nameof(NewSubItemPage)}?{nameof(NewSubItemViewModel.ParentID)}={id}");
         }
         private async void OnAddActivityNote()
         {
-            string result = await Shell.Current.DisplayPromptAsync("Nowa notatka", "Treść",accept: "OK", cancel:"Anuluj");
-            if(result == null)
+            string result = await Shell.Current.DisplayPromptAsync("Nowa notatka", "Treść", accept: "OK", cancel: "Anuluj");
+            if (result == null)
             {
                 return;
             }
@@ -144,7 +143,8 @@ namespace App_for_time_management.ViewModels
                 Content = result,
                 ParentID = id
             };
-            await DataStore.AddActivityNoteAsync(activityNote);
+            int v = await DataStore.AddActivityNoteAsync(activityNote);
+            Debug.WriteLine("Succesfully added " + v + "activities");
             ActivityNotes.Add(activityNote);
 
         }
@@ -158,11 +158,19 @@ namespace App_for_time_management.ViewModels
             if (!string.IsNullOrWhiteSpace(result))
             {
                 int index = ActivityNotes.IndexOf(note);
-                ActivityNotes.Remove(note);
+                if (ActivityNotes.Remove(note))
+                {
+                    Debug.WriteLine("Successfully removed note");
+                }
+                else
+                {
+                    Debug.WriteLine("Error ocurred during removing of a note");
+                }
                 note.Content = result;
                 ActivityNotes.Insert(index, note);
             }
-            await DataStore.UpdateActivityNote(note);
+            int v = await DataStore.UpdateActivityNote(note);
+            Debug.WriteLine("Succesfully updated " + v + " notes");
         }
         private async void OnCancel()
         {
@@ -190,19 +198,22 @@ namespace App_for_time_management.ViewModels
             };
             if (!alreadyPresent)
             {
-                await DataStore.AddItemAsync(newItem);
+                int v = await DataStore.AddItemAsync(newItem);
+                Debug.WriteLine("Succesfully added " + v + "activities");
             }
             else
             {
-                await DataStore.UpdateItemAsync(newItem);
+                int v = await DataStore.UpdateItemAsync(newItem);
+                Debug.WriteLine("Succesfully updated " + v + "activities");
             }
             await Shell.Current.GoToAsync("..");
         }
         private async void OnSubItemSelected(SubActivity subItem)
         {
             if (subItem == null)
+            {
                 return;
-
+            }
 
             await Shell.Current.GoToAsync($"{nameof(SubItemDetailPage)}?{nameof(SubItemDetailViewModel.SubItemId)}={subItem.ID}");
         }
@@ -233,8 +244,8 @@ namespace App_for_time_management.ViewModels
         }
         private bool ValidateSave()
         {
-            return !String.IsNullOrWhiteSpace(text)
-                && !String.IsNullOrWhiteSpace(description);
+            return !string.IsNullOrWhiteSpace(text)
+                && !string.IsNullOrWhiteSpace(description);
         }
         public string Text
         {

@@ -11,7 +11,7 @@ using Xamarin.Forms;
 
 namespace App_for_time_management.ViewModels
 {
-    public class ScheduleViewModel:BaseViewModel
+    public class ScheduleViewModel : BaseViewModel
     {
         private Activity _selectedItem;
         public ObservableCollection<ScheduledItem> Items { get; }
@@ -44,9 +44,9 @@ namespace App_for_time_management.ViewModels
             try
             {
                 Items.Clear();
-                var items = (await App.Database.GetItemsAsync(true)).ToList();
+                List<Activity> items = (await App.Database.GetItemsAsync(true)).ToList();
                 List<Activity> temporaryList = new List<Activity>();
-                foreach (var item in items)
+                foreach (Activity item in items)
                 {
                     DateTime minimalStartTime = item.DeadlineDate.Subtract(item.Duration);
                     TimeSpan minTime = item.DeadlineTime.Subtract(item.Duration);
@@ -58,12 +58,12 @@ namespace App_for_time_management.ViewModels
                             Scheduled = item,
                             SubActivities = new ObservableCollection<SubActivity>()
                         };
-                        
+
                         planned = planned.Add(scheduled.Scheduled.Duration);
                         //start = start.Add(scheduled.Scheduled.Duration).Add(break_duration);
-                        if(item.SubActivity.Count!=0)
+                        if (item.SubActivity.Count != 0)
                         {
-                            foreach (var sub in item.SubActivity)
+                            foreach (SubActivity sub in item.SubActivity)
                             {
                                 scheduled.SubActivities.Add(sub);
                             }
@@ -105,22 +105,23 @@ namespace App_for_time_management.ViewModels
                                 IsCyclic = item.IsCyclic,
                                 CyclePeriod = item.CyclePeriod
                             };
-                            
-                            
+
+
                             if (!items.Exists(i => repeated.Name.Equals(i.Name) && repeated.DeadlineDate.Equals(i.DeadlineDate)))
                             {
-                                App.Database.AddItemAsync(repeated);
+                                int v = await App.Database.AddItemAsync(repeated);
+                                Debug.WriteLine("Added " + v + "items");
                             }
                         }
 
 
 
                     }
-                    else if(!item.TimeSensitive)
+                    else if (!item.TimeSensitive)
                     {
                         temporaryList.Add(item);
                     }
-                    
+
                 }
                 temporaryList.Sort((p, q) =>
                 {
@@ -188,7 +189,7 @@ namespace App_for_time_management.ViewModels
                     double qPriority = qTime.TotalHours * qMultiplier;
                     return pPriority > qPriority ? -1 : pPriority < qPriority ? 1 : 0;
                 });
-                foreach(var item in temporaryList)
+                foreach (Activity item in temporaryList)
                 {
                     if ((planned.Ticks / end.Ticks) > 0.6)
                     {
@@ -198,7 +199,7 @@ namespace App_for_time_management.ViewModels
                     {
                         int subActivityCount = item.SubActivity.Count;
                         ObservableCollection<SubActivity> subItems = new ObservableCollection<SubActivity>();
-                        if(!(subActivityCount == 0) && !(subActivityCount == 1))
+                        if (!(subActivityCount == 0) && !(subActivityCount == 1))
                         {
                             int daysLeft = item.DeadlineDate.Subtract(DateTime.Now).Days;
                             int numberOfSubActivities = subActivityCount;
@@ -226,9 +227,9 @@ namespace App_for_time_management.ViewModels
                             subActivitiesDuration = subActivitiesDuration.Add(sub.Duration);
                         }
                         item.Duration = subItems.Count > 0 ? subActivitiesDuration : item.Duration;
-                        foreach (var i in Items)
+                        foreach (ScheduledItem i in Items)
                         {
-                            if ((i.StartTime < start)&&(start < i.Scheduled.DeadlineTime))
+                            if ((i.StartTime < start) && (start < i.Scheduled.DeadlineTime))
                             {
                                 start = i.Scheduled.DeadlineTime.Add(break_duration);
                             }
@@ -245,9 +246,9 @@ namespace App_for_time_management.ViewModels
                         start = start.Add(scheduled.Scheduled.Duration).Add(break_duration);
                     }
                 }
-                var temp = new ObservableCollection<ScheduledItem>(Items.OrderBy(i => i.StartTime));
+                ObservableCollection<ScheduledItem> temp = new ObservableCollection<ScheduledItem>(Items.OrderBy(i => i.StartTime));
                 Items.Clear();
-                foreach(var t in temp)
+                foreach (ScheduledItem t in temp)
                 {
                     Items.Add(t);
                 }
@@ -271,11 +272,7 @@ namespace App_for_time_management.ViewModels
         public Activity SelectedItem
         {
             get => _selectedItem;
-            set
-            {
-                SetProperty(ref _selectedItem, value);
-                //OnItemSelected(value);
-            }
+            set => SetProperty(ref _selectedItem, value);//OnItemSelected(value);
         }
 
         private async void OnItemSelected(Activity item)
@@ -284,9 +281,9 @@ namespace App_for_time_management.ViewModels
             {
                 return;
             }
-            
+
             await Shell.Current.GoToAsync($"{nameof(ItemDetailPage)}?{nameof(ItemDetailViewModel.ItemId)}={item.ID}");
-            
+
         }
 
     }

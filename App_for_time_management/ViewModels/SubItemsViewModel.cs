@@ -1,16 +1,14 @@
 ﻿using App_for_time_management.Models;
 using App_for_time_management.Views;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Text;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 
 namespace App_for_time_management.ViewModels
 {
-    class SubItemsViewModel:BaseViewModel
+    public class SubItemsViewModel : BaseViewModel
     {
         private SubActivity _selectedSubItem;
         public ObservableCollection<SubActivity> SubItems { get; }
@@ -35,8 +33,8 @@ namespace App_for_time_management.ViewModels
             try
             {
                 SubItems.Clear();
-                var subitems = await App.Database.GetSubItemsAsync(true);
-                foreach (var item in subitems)
+                System.Collections.Generic.IEnumerable<SubActivity> subitems = await App.Database.GetSubItemsAsync(true);
+                foreach (SubActivity item in subitems)
                 {
                     SubItems.Add(item);
                 }
@@ -62,7 +60,7 @@ namespace App_for_time_management.ViewModels
             get => _selectedSubItem;
             set
             {
-                SetProperty(ref _selectedSubItem, value);
+                _ = SetProperty(ref _selectedSubItem, value);
                 OnSubItemSelected(value);
             }
         }
@@ -72,12 +70,13 @@ namespace App_for_time_management.ViewModels
             await Shell.Current.GoToAsync(nameof(NewSubItemPage));
         }
 
-        
+
         private async void OnSubItemSelected(SubActivity subItem)
         {
             if (subItem == null)
+            {
                 return;
-
+            }
 
             await Shell.Current.GoToAsync($"{nameof(SubItemDetailPage)}?{nameof(SubItemDetailViewModel.SubItemId)}={subItem.ID}");
         }

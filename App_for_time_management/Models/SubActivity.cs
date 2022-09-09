@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using SQLite;
-using SQLiteNetExtensions;
 using SQLiteNetExtensions.Attributes;
 
 namespace App_for_time_management.Models

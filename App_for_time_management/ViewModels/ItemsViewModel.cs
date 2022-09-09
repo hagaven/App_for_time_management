@@ -35,8 +35,8 @@ namespace App_for_time_management.ViewModels
             try
             {
                 Items.Clear();
-                var items = await App.Database.GetItemsAsync(true);
-                foreach (var item in items)
+                System.Collections.Generic.IEnumerable<Activity> items = await App.Database.GetItemsAsync(true);
+                foreach (Activity item in items)
                 {
                     Items.Add(item);
                 }
@@ -62,7 +62,7 @@ namespace App_for_time_management.ViewModels
             get => _selectedItem;
             set
             {
-                SetProperty(ref _selectedItem, value);
+                _ = SetProperty(ref _selectedItem, value);
                 OnItemSelected(value);
             }
         }

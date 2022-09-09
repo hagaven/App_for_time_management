@@ -14,7 +14,6 @@ namespace App_for_time_management.ViewModels
         private int durationMinutes;
         private string durctrl1;
         private string durctrl2;
-        private string id;
         private string parentID;
         public Command<SubActivityNote> NoteTapped { get; }
         public Command SaveCommand { get; }
@@ -29,16 +28,16 @@ namespace App_for_time_management.ViewModels
             AddSubActivityNoteCommand = new Command(OnAddActivityNote);
             PropertyChanged +=
                 (_, __) => SaveCommand.ChangeCanExecute();
-            
-            id = Guid.NewGuid().ToString();
+
+            Id = Guid.NewGuid().ToString();
             SubActivityNotes = new ObservableCollection<SubActivityNote>();
             NoteTapped = new Command<SubActivityNote>(OnNoteTapped);
         }
 
         private bool ValidateSave()
         {
-            return !String.IsNullOrWhiteSpace(text)
-                && !String.IsNullOrWhiteSpace(description);
+            return !string.IsNullOrWhiteSpace(text)
+                && !string.IsNullOrWhiteSpace(description);
         }
 
         public string Text
@@ -82,7 +81,7 @@ namespace App_for_time_management.ViewModels
             get => parentID;
             set => SetProperty(ref parentID, value);
         }
-
+        public string Id { get; set; }
 
         private async void OnNoteTapped(SubActivityNote note)
         {
@@ -94,16 +93,16 @@ namespace App_for_time_management.ViewModels
             if (!string.IsNullOrWhiteSpace(result))
             {
                 int index = SubActivityNotes.IndexOf(note);
-                SubActivityNotes.Remove(note);
+                _ = SubActivityNotes.Remove(note);
                 note.Content = result;
                 SubActivityNotes.Insert(index, note);
             }
-            await DataStore.UpdateSubActivityNote(note);
+            _ = await DataStore.UpdateSubActivityNote(note);
         }
 
         private async void OnCancel()
         {
-            
+
             await Shell.Current.GoToAsync("..");
         }
 
@@ -112,13 +111,13 @@ namespace App_for_time_management.ViewModels
             TimeSpan duration = new TimeSpan(DurationHours, DurationMinutes, 0);
             SubActivity newSubItem = new SubActivity()
             {
-                ID = id,
+                ID = Id,
                 Text = Text,
                 Description = Description,
                 Duration = duration,
                 ParentID = parentID
             };
-            await App.Database.AddSubItemAsync(newSubItem);
+            _ = await App.Database.AddSubItemAsync(newSubItem);
             await Shell.Current.GoToAsync("..");
         }
         private async void OnAddActivityNote()
@@ -132,9 +131,9 @@ namespace App_for_time_management.ViewModels
             {
                 ID = Guid.NewGuid().ToString(),
                 Content = result,
-                ParentID = id
+                ParentID = Id
             };
-            await DataStore.AddSubActivityNoteAsync(subActivityNote);
+            _ = await DataStore.AddSubActivityNoteAsync(subActivityNote);
             SubActivityNotes.Add(subActivityNote);
 
         }

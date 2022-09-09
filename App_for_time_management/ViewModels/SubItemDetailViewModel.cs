@@ -10,7 +10,7 @@ using Xamarin.Forms;
 namespace App_for_time_management.ViewModels
 {
     [QueryProperty(nameof(SubItemId), nameof(SubItemId))]
-    class SubItemDetailViewModel : BaseViewModel
+    public class SubItemDetailViewModel : BaseViewModel
     {
         private string subItemId;
         private string text;
@@ -115,7 +115,7 @@ namespace App_for_time_management.ViewModels
         }
 
         public Command LoadSubItemCommand { get; }
-        private async void OnAppear()
+        private void OnAppear()
         {
             IsBusy = true;
             LoadSubItemId(SubItemId);
@@ -169,7 +169,13 @@ namespace App_for_time_management.ViewModels
             if (!string.IsNullOrWhiteSpace(result))
             {
                 int index = SubActivityNotes.IndexOf(note);
-                SubActivityNotes.Remove(note);
+                if (SubActivityNotes.Remove(note)) {
+                    Debug.WriteLine("Removed note" + note + " succesfully");
+                }
+                else
+                {
+                    Debug.WriteLine("Error accured during removing note");
+                };
                 note.Content = result;
                 SubActivityNotes.Insert(index, note);
             }
